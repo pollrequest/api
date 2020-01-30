@@ -32,20 +32,20 @@ function createSchema(container: ServiceContainer) {
     const schema = new Schema({
         email: {
             type: Schema.Types.String,
-            required: [true, 'Email is required'],
+            required: true,
             unique: true,
-            match: [/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/, 'Invalid user email']
+            match: /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
         },
         name: {
             type: Schema.Types.String,
-            required: [true, 'User name is required'],
-            minlength: [3, 'Name is too small, it\'s length must be between 3 and 30 characters'],
-            maxlength: [30, 'Name is too long, it\'s length must be between 3 and 30 characters']
+            required: true,
+            minlength: 3,
+            maxlength: 30
         },
         password: {
             type: Schema.Types.String,
-            required: [true, 'User password is required'],
-            minlength: [8, 'Password is too small, it\'s length must be greater than 8 characters'],
+            required: true,
+            minlength: 8,
             select: false // Par défaut retourne pas le mot de passe (dans les find)
         }
     });
