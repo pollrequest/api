@@ -1,6 +1,6 @@
-import Attributes from './model';
-import { Document, Mongoose, Model, Schema } from 'mongoose';
+import { Document, Model, Mongoose, Schema } from 'mongoose';
 import ServiceContainer from '../services/service-container';
+import Attributes from './model';
 
 /**
  * User attributes interface.
@@ -28,6 +28,12 @@ export default function createModel(container: ServiceContainer, mongoose: Mongo
     return mongoose.model('User', createSchema(container), 'users');
 }
 
+/**
+ * Creates the user schema.
+ * 
+ * @param container Services container
+ * @returns User schema
+ */
 function createSchema(container: ServiceContainer) {
     const schema = new Schema({
         email: {
@@ -48,6 +54,8 @@ function createSchema(container: ServiceContainer) {
             minlength: [8, 'Password is too small, it\'s length must be greater than 8 characters'],
             select: false // Par défaut retourne pas le mot de passe (dans les find)
         }
+    }, {
+        timestamps: true
     });
     return schema;
 }
