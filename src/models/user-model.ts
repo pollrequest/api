@@ -1,6 +1,7 @@
 import { Document, Model, Mongoose, Schema } from 'mongoose';
 import ServiceContainer from '../services/service-container';
 import Attributes from './model';
+import { PollInstance } from './poll-model';
 
 /**
  * User attributes interface.
@@ -9,7 +10,7 @@ export interface UserAttributes extends Attributes {
     email: string;
     name: string;
     password: string;
-    // TODO polls: []
+    polls: PollInstance[];
 }
 
 /**
@@ -53,7 +54,12 @@ function createSchema(container: ServiceContainer) {
             required: true,
             minlength: 8,
             select: false // Par défaut retourne pas le mot de passe (dans les find)
-        }
+        },
+        polls: [{
+            type: Schema.Types.ObjectId,
+            ref: 'Poll',
+            default: []
+        }]
     }, {
         timestamps: true
     });

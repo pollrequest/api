@@ -1,13 +1,15 @@
-import { Document, Model, Mongoose, Schema } from 'mongoose';
+import { Document, Mongoose, Schema } from 'mongoose';
 import ServiceContainer from '../services/service-container';
+import { CommentInstance } from './comment-model';
 import Attributes from './model';
+import { UserInstance } from './user-model';
 
 /**
  * Poll attributes interface.
  */
 export interface PollAttributes extends Attributes {
     title: string;
-    // TODO Add author (user model)
+    author: UserInstance;
     options: {
         multiple: boolean;
         ipChecking: boolean;
@@ -17,10 +19,10 @@ export interface PollAttributes extends Attributes {
         label: string;
         voters: [{
             ip: string;
-            // TODO Add voter (user model)
+            voter: UserInstance;
         }];
     }];
-    // TODO Add comments (comment model)
+    comments: CommentInstance[];
 }
 
 /**
@@ -50,9 +52,18 @@ function createPollSchema() {
             required: true,
             maxlength: 100
         },
-        // TODO Add author (user model)
+        author: {
+            type: Schema.Types.ObjectId,
+            ref: 'User',
+            default: null
+        },
         options: createOptionsSubSchema(),
-        choices: createChoicesSubSchema()
+        choices: createChoicesSubSchema(),
+        comments: [{
+            type: Schema.Types.ObjectId,
+            ref: 'Comment',
+            default: []
+        }]
     });
     return schema;
 }
@@ -104,7 +115,11 @@ function createVotersSubSchema() {
             type: Schema.Types.String,
             required: true
         },
-        // TODO Add voter (user model)
+        voter: {
+            type: Schema.Types.ObjectId,
+            ref: 'User',
+            default: null
+        },
     });
     return schema;
 }
