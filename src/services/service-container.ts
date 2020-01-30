@@ -1,3 +1,4 @@
+import AuthenticationService from './authentication-service';
 import ConfigurationService from './configuration-service';
 import ControllerService from './controller-service';
 import DatabaseService from './database-service';
@@ -37,6 +38,7 @@ export default class ServiceContainer {
     private _srv: ServerService | null;
     private _config: ConfigurationService | null;
     private _log: LogService | null;
+    private _auth: AuthenticationService | null;
 
     /**
      * Creates a new services container.
@@ -49,6 +51,7 @@ export default class ServiceContainer {
         this._srv = null;
         this._config = null;
         this._log = null;
+        this._auth = null;
         this.env.load(); // Autoload environment
     }
 
@@ -106,5 +109,13 @@ export default class ServiceContainer {
             this._log.log('Loaded log service', { type: 'service-container' });
         }
         return this._log;
+    }
+
+    public get auth(): AuthenticationService {
+        if (!this._auth) {
+            this._auth = new AuthenticationService(this);
+            this.log.log('Loaded authentication service', { type: 'service-container' });
+        }
+        return this._auth;
     }
 }
