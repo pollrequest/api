@@ -1,15 +1,15 @@
-// import { UserInstance } from './user-model';
-// import { pollInstance } from './poll-model;
 import { Document, Model, Mongoose, Schema } from 'mongoose';
 import ServiceContainer from '../services/service-container';
 import Attributes from './model';
+import { PollInstance } from './poll-model';
+import { UserInstance } from './user-model';
 
 /**
  * Comment attributes interface.
  */
 export interface CommentAttributes extends Attributes {
-    // author: UserInstance,
-    // poll: PollInstance,
+    author: UserInstance;
+    poll: PollInstance;
     content: string;
 }
 
