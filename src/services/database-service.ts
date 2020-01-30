@@ -1,4 +1,5 @@
 import { Model, Mongoose } from 'mongoose';
+import createCommentModel, { CommentInstance } from '../models/comment-model';
 import createPollModel, { PollInstance } from '../models/poll-model';
 import Service from './service';
 import ServiceContainer from './service-container';
@@ -11,6 +12,7 @@ import createUserModel, { UserInstance } from '../models/user-model';
  */
 export default class DatabaseService extends Service {
 
+    public readonly comments: Model<CommentInstance>;
     public readonly polls: Model<PollInstance>;
     public readonly users: Model<UserInstance>; 
     private readonly mongoose: Mongoose;
@@ -23,6 +25,7 @@ export default class DatabaseService extends Service {
     public constructor(container: ServiceContainer) {
         super(container);
         this.mongoose = this.createMongoose();
+        this.comments = createCommentModel(container, this.mongoose);
         this.polls = createPollModel(container, this.mongoose);
         this.users = createUserModel(container, this.mongoose);
     }
