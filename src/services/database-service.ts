@@ -1,6 +1,6 @@
 import { Model, Mongoose } from 'mongoose';
+import createCommentModel, { CommentInstance } from '../models/comment-model';
 import Service from './service';
-import createCommentModel, { CommentInstance } from '../models/comment-model'; 
 import ServiceContainer from './service-container';
 
 /**

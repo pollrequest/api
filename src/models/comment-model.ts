@@ -1,25 +1,25 @@
-import Attributes from './model';
 // import { UserInstance } from './user-model';
 // import { pollInstance } from './poll-model;
-import { Document, Mongoose, Model, Schema } from 'mongoose';
+import { Document, Model, Mongoose, Schema } from 'mongoose';
 import ServiceContainer from '../services/service-container';
+import Attributes from './model';
 
 /**
- * Comment attributes interface
+ * Comment attributes interface.
  */
 export interface CommentAttributes extends Attributes {
     // author: UserInstance,
     // poll: PollInstance,
-    content: string
+    content: string;
 }
 
 /**
- * Comment instance interface
+ * Comment instance interface.
  */
 export interface CommentInstance extends CommentAttributes, Document {}
 
 /**
- * Creates the comment model
+ * Creates the comment model.
  * 
  * @param container Services container
  * @param mongoose Mongoose instance
@@ -30,7 +30,7 @@ export default function createComment(container: ServiceContainer, mongoose: Mon
 }
 
 /**
- * Creates the comment schema
+ * Creates the comment schema.
  * 
  * @param container Services container
  * @returns Comment schema
@@ -40,17 +40,17 @@ function createSchema(container: ServiceContainer) {
         author: {
             type: Schema.Types.ObjectId,
             ref: 'User',
-            required: [true, 'Author is required']
+            required: true
         },
         poll: {
             type: Schema.Types.ObjectId,
             ref: 'Poll',
-            required: [true, 'Poll is required']
+            required: true
         },
         content: {
             type: Schema.Types.String,
-            required: [true, 'Content is required'],
-            maxlength: [300, 'Content is too long, it\s length must be under 300 characters']
+            required: true,
+            maxlength: 300
         }
     }, {
         timestamps: true
