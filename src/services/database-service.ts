@@ -1,5 +1,6 @@
 import { Model, Mongoose } from 'mongoose';
 import Service from './service';
+import createCommentModel, { CommentInstance } from '../models/comment-model'; 
 import ServiceContainer from './service-container';
 
 /**
@@ -9,6 +10,7 @@ import ServiceContainer from './service-container';
  */
 export default class DatabaseService extends Service {
 
+    public readonly comments: Model<CommentInstance>;
     private readonly mongoose: Mongoose;
 
     /**
@@ -19,6 +21,7 @@ export default class DatabaseService extends Service {
     public constructor(container: ServiceContainer) {
         super(container);
         this.mongoose = this.createMongoose();
+        this.comments = createCommentModel(container, this.mongoose);
     }
 
     /**
