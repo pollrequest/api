@@ -10,7 +10,7 @@ import ServiceContainer from './service-container';
  */
 export default class DatabaseService extends Service {
 
-    public polls: Model<PollInstance>;
+    public readonly polls: Model<PollInstance>;
     private readonly mongoose: Mongoose;
 
     /**
