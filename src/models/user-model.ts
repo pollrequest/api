@@ -63,5 +63,19 @@ function createSchema(container: ServiceContainer) {
     }, {
         timestamps: true
     });
+
+    // Password hash validation
+    schema.pre('validate', async function(this: UserInstance, next) {
+        if (this.password !== undefined) { // Validates the password only if filled
+            try {
+                this.password = await container.auth.hash(this.password, Number(process.env.HASH_SALT));
+                return next();
+            } catch (err) {
+                container.log.log(err, { severity: 'ERROR' });
+                return next(err);
+            }
+        }
+    });
+
     return schema;
 }
