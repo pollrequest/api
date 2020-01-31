@@ -1,7 +1,7 @@
-import Controller from './controller';
-import ServiceContainer from '../services/service-container';
 import { Request, Response } from 'express';
 import { UserInstance } from '../models/user-model';
+import ServiceContainer from '../services/service-container';
+import Controller from './controller';
 
 /**
  * Users controller.
