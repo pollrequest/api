@@ -46,7 +46,7 @@ export default class UserController extends Controller {
             if (res.locals.user) { // First check : headers
                 user = res.locals.user;
             } else if (req.body.token) { // If not in headers, second check : body
-                const tokenData = await this.container.auth.decodeToken(req.body.token, process.env.TOKEN_KEY);
+                const tokenData = await this.container.tokens.decode(req.body.token, process.env.TOKEN_KEY);
                 user = await this.container.db.users.findById(tokenData.userId);
             }
             if (!user) {

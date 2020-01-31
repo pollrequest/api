@@ -6,5 +6,8 @@ declare namespace NodeJS {
         DB_PORT: string;
         DB_NAME: string;
         TOKEN_KEY: string;
+        TOKEN_EXP: string;
+        REFRESH_TOKEN_EXPIRATION: string;
+        HASH_SALT: string;
     }
 }
