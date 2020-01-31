@@ -3,6 +3,7 @@ import Controller from '../controllers/controller';
 import UserController from '../controllers/user-controller';
 import Service from './service';
 import ServiceContainer from './service-container';
+import AuthenticationController from '../controllers/authentication-controller';
 
 /**
  * Controllers service class.
@@ -23,6 +24,7 @@ export default class ControllerService extends Service {
     public constructor(container: ServiceContainer) {
         super(container);
         this.controllers = [
+            new AuthenticationController(container),
             new UserController(container)
         ];
     }

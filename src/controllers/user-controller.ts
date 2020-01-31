@@ -46,7 +46,7 @@ export default class UserController extends Controller {
             if (res.locals.user) { // First check : headers
                 user = res.locals.user;
             } else if (req.body.token) { // If not in headers, second check : body
-                const tokenData = await this.container.tokens.decode(req.body.token, process.env.TOKEN_KEY);
+                const tokenData = await this.container.tokens.decode(req.body.token, process.env.ACCESS_TOKEN_KEY);
                 user = await this.container.db.users.findById(tokenData.userId);
             }
             if (!user) {
@@ -54,7 +54,7 @@ export default class UserController extends Controller {
             }
             return res.status(200).json(user);
         } catch (err) {
-            this.logger.error(err, {type: 'endpoints'});
+            this.logger.error(err, { type: 'endpoints' });
             return res.status(500).json({ error: err.message });
         }
     }
@@ -75,7 +75,7 @@ export default class UserController extends Controller {
             const users = await this.container.db.users.find();
             return res.status(200).json(users);
         } catch (err) {
-            this.logger.error(err, {type: 'endpoints'});
+            this.logger.error(err, { type: 'endpoints' });
             return res.status(500).json({ error: err.message });
         }
     }
@@ -99,7 +99,7 @@ export default class UserController extends Controller {
             }
             return res.status(200).json(user);
         } catch (err) {
-            this.logger.error(err, {type: 'endpoints'});
+            this.logger.error(err, { type: 'endpoints' });
             return res.status(500).json({ error: err.message });
         }
     }
@@ -128,7 +128,7 @@ export default class UserController extends Controller {
             await user.save();
             return res.status(200).json();
         } catch (err) {
-            this.logger.error(err, {type: 'endpoints'});
+            this.logger.error(err, { type: 'endpoints' });
             return res.status(500).json({ error: err.message });
         }
     }
@@ -165,7 +165,7 @@ export default class UserController extends Controller {
             await user.save();
             return res.status(200).json();
         } catch (err) {
-            this.logger.error(err, {type: 'endpoints'});
+            this.logger.error(err, { type: 'endpoints' });
             return res.status(500).json({ error: err.message });
         }
     }
@@ -189,7 +189,7 @@ export default class UserController extends Controller {
             }
             return res.status(204).json();
         } catch (err) {
-            this.logger.error(err, {type: 'endpoints'});
+            this.logger.error(err, { type: 'endpoints' });
             return res.status(500).json({ error: err.message });
         }
     }

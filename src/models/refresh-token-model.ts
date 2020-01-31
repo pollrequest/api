@@ -39,7 +39,7 @@ function createSchema() {
         },
         expiration: {
             type: Schema.Types.Date,
-            default: new Date(Date.now() + (Number(process.env.REFRESH_TOKEN_EXPIRATION) * 1000))
+            default: new Date(Date.now() + (parseInt(process.env.REFRESH_TOKEN_EXP, 10) * 1000))
         },
         user: {
             type: Schema.Types.ObjectId,
