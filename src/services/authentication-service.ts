@@ -38,7 +38,7 @@ export default class AuthenticationService extends Service {
 
         if (token !== null) {
             try {
-                const data = await this.container.tokens.decode(token, process.env.TOKEN_KEY);
+                const data = await this.container.tokens.decode(token, process.env.ACCESS_TOKEN_KEY);
                 const user = await this.container.db.users.findById(data.userId);
 
                 if (user) {

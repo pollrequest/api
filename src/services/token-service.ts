@@ -27,7 +27,7 @@ export default class TokenService extends Service {
      * @returns Token string
      * @async
      */
-    public async encode(data: TokenData, key: string, expiration: number = 3600): Promise<string> {
+    public async encode<T extends TokenData>(data: T, key: string, expiration: number = 3600): Promise<string> {
         return new Promise<string>((resolve, reject) => {
             jwt.sign(data, key, { expiresIn: expiration, algorithm: 'HS512' }, (err, token) => {
                 if (err) {
@@ -47,13 +47,13 @@ export default class TokenService extends Service {
      * @returns Token data
      * @async
      */
-    public async decode(token: string, key: string): Promise<TokenData> {
+    public async decode<T extends TokenData>(token: string, key: string): Promise<TokenData> {
         return new Promise<TokenData>((resolve, reject) => {
             jwt.verify(token, key, (err, data) => {
                 if (err) {
                     reject(err);
                 } else {
-                    resolve(data as TokenData);
+                    resolve(data as T);
                 }
             });
         });
