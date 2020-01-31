@@ -39,10 +39,12 @@ export default class AuthenticationController extends Controller {
                 password: req.body.password,
                 polls: req.body.polls
             });
-            const token = await this.container.tokens.encode({ userId: user.id }, process.env.TOKEN_KEY, Number(process.env.TOKEN_EXP));
             return res.status(201).json({
-                id: user.id,
-                token
+                links: [{
+                    rel: 'login',
+                    href: `http://${req.hostname}/auth/signin`
+                }],
+                id: user.id
             });
         } catch (err) {
             this.logger.error(err, {type: 'endpoints'});
@@ -70,10 +72,12 @@ export default class AuthenticationController extends Controller {
             if (!await this.container.crypto.compare(req.body.password, user.password)) {
                 return res.status(401).json({ error: 'Invalid password' });
             }
-            const token = await this.container.tokens.encode({ userId: user.id }, process.env.TOKEN_KEY, Number(process.env.TOKEN_EXP));
+            const accessToken = await this.container.tokens.encode({ userId: user.id }, process.env.ACCESS_TOKEN_KEY, Number(process.env.ACCESS_TOKEN_EXP));
+            const refreshToken = await this.container.tokens.encode({ userId: user.id }, process.env.REFRESH_TOKEN_KEY, Number(process.env.REFRESH_TOKEN_EXP))
             return res.status(200).json({
                 id: user.id,
-                token
+                accessToken,
+                refreshToken
             });
         } catch (err) {
             this.logger.error(err, {type: 'endpoints'});
