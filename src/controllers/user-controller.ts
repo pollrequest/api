@@ -7,6 +7,7 @@ import { UserInstance } from '../models/user-model';
  * Users controller.
  */
 export default class UserController extends Controller {
+
     /**
      * Creates a new users controller.
      * 
@@ -27,6 +28,7 @@ export default class UserController extends Controller {
         this.registerEndpoint({ method: 'PATCH', uri: '/:id', handlers: [this.updateHandler], description: 'Updates an user' });
         this.registerEndpoint({ method: 'DELETE', uri: '/:id', handlers: [this.deleteHandler], description: 'Deletes an user' });
     }
+
     /**
      * Gets the user from a provided token (in headers or body).
      * 
@@ -56,6 +58,7 @@ export default class UserController extends Controller {
             return res.status(500).json({ error: err.message });
         }
     }
+
     /**
      * Gets all users.
      * 
@@ -76,6 +79,7 @@ export default class UserController extends Controller {
             return res.status(500).json({ error: err.message });
         }
     }
+
     /**
      * Gets a specific user.
      * 
@@ -99,6 +103,7 @@ export default class UserController extends Controller {
             return res.status(500).json({ error: err.message });
         }
     }
+
     /**
      * Modifies an user.
      * 
@@ -127,6 +132,7 @@ export default class UserController extends Controller {
             return res.status(500).json({ error: err.message });
         }
     }
+
     /**
      * Updates an user.
      * 
