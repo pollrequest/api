@@ -21,10 +21,10 @@ export interface PollAttributes extends Attributes {
             voter: UserInstance;
         }];
     }];
-    comments: {
+    comments: [{
         author: UserInstance;
         content: string;
-    };
+    }];
 }
 
 /**
@@ -48,6 +48,7 @@ export default function createModel(container: ServiceContainer, mongoose: Mongo
  * @returns Poll schema
  */
 function createPollSchema() {
+    const optionsSubSchema = createOptionsSubSchema();
     const schema = new Schema({
         title: {
             type: Schema.Types.String,
@@ -59,9 +60,17 @@ function createPollSchema() {
             ref: 'User',
             default: null
         },
-        options: createOptionsSubSchema(),
-        choices: createChoicesSubSchema(),
-        comments: createCommentsSubSchema()
+        options: {
+            type: optionsSubSchema,
+            default: optionsSubSchema
+        },
+        choices: [{
+            type: createChoicesSubSchema(),
+            required: true
+        }],
+        comments: [{
+            type: createCommentsSubSchema()
+        }]
     });
     return schema;
 }
@@ -81,6 +90,8 @@ function createOptionsSubSchema() {
             type: Schema.Types.Boolean,
             default: false
         }
+    }, {
+        _id: false
     });
     return schema;
 }
@@ -97,7 +108,9 @@ function createChoicesSubSchema() {
             required: true,
             maxlength: 50
         },
-        voters: createVotersSubSchema()
+        voters: [{
+            type: createVotersSubSchema()
+        }]
     });
     return schema;
 }
