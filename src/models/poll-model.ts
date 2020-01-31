@@ -1,6 +1,5 @@
 import { Document, Mongoose, Schema } from 'mongoose';
 import ServiceContainer from '../services/service-container';
-import { CommentInstance } from './comment-model';
 import Attributes from './model';
 import { UserInstance } from './user-model';
 
@@ -22,7 +21,10 @@ export interface PollAttributes extends Attributes {
             voter: UserInstance;
         }];
     }];
-    comments: CommentInstance[];
+    comments: [{
+        author: UserInstance;
+        content: string;
+    }];
 }
 
 /**
@@ -46,6 +48,7 @@ export default function createModel(container: ServiceContainer, mongoose: Mongo
  * @returns Poll schema
  */
 function createPollSchema() {
+    const optionsSubSchema = createOptionsSubSchema();
     const schema = new Schema({
         title: {
             type: Schema.Types.String,
@@ -57,12 +60,16 @@ function createPollSchema() {
             ref: 'User',
             default: null
         },
-        options: createOptionsSubSchema(),
-        choices: createChoicesSubSchema(),
+        options: {
+            type: optionsSubSchema,
+            default: optionsSubSchema
+        },
+        choices: [{
+            type: createChoicesSubSchema(),
+            required: true
+        }],
         comments: [{
-            type: Schema.Types.ObjectId,
-            ref: 'Comment',
-            default: []
+            type: createCommentsSubSchema()
         }]
     });
     return schema;
@@ -83,6 +90,8 @@ function createOptionsSubSchema() {
             type: Schema.Types.Boolean,
             default: false
         }
+    }, {
+        _id: false
     });
     return schema;
 }
@@ -99,7 +108,9 @@ function createChoicesSubSchema() {
             required: true,
             maxlength: 50
         },
-        voters: createVotersSubSchema()
+        voters: [{
+            type: createVotersSubSchema()
+        }]
     });
     return schema;
 }
@@ -121,5 +132,29 @@ function createVotersSubSchema() {
             default: null
         },
     });
+    return schema;
+}
+
+/**
+ * Creates comments subschema.
+ * 
+ * @returns Comment schema
+ */
+function createCommentsSubSchema() {
+    const schema = new Schema({
+        author: {
+            type: Schema.Types.ObjectId,
+            ref: 'User',
+            required: true
+        },
+        content: {
+            type: Schema.Types.String,
+            required: true,
+            maxlength: 300
+        }
+    }, {
+        timestamps: true
+    });
+
     return schema;
 }
