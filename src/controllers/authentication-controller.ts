@@ -75,9 +75,9 @@ export default class AuthenticationController extends Controller {
             if (!await this.container.crypto.compare(req.body.password, user.password)) {
                 return res.status(401).json({ error: 'Invalid password' });
             }
-            const accessToken = await this.container.tokens.encode<AccessTokenData>({ userId: user.id }, process.env.ACCESS_TOKEN_KEY, Number(process.env.ACCESS_TOKEN_EXP));
+            const accessToken = await this.container.tokens.encode<AccessTokenData>({ userId: user.id }, process.env.ACCESS_TOKEN_KEY, parseInt(process.env.ACCESS_TOKEN_EXP, 10));
             const refreshToken = await this.container.db.refreshTokens.create({
-                token: await this.container.tokens.encode<RefreshTokenData>({ userId: user.id }, process.env.REFRESH_TOKEN_KEY, Number(process.env.REFRESH_TOKEN_EXP)),
+                token: await this.container.tokens.encode<RefreshTokenData>({ userId: user.id }, process.env.REFRESH_TOKEN_KEY, parseInt(process.env.REFRESH_TOKEN_EXP, 10)),
                 user
             });
             return res.status(200).json({
@@ -108,8 +108,8 @@ export default class AuthenticationController extends Controller {
             if (!refreshToken) {
                 return res.status(400).json({ error: 'No refresh token provided' });
             }
-            const accessToken = await this.container.tokens.encode<AccessTokenData>({ userId: refreshToken.user.id }, process.env.ACCESS_TOKEN_KEY, Number(process.env.ACCESS_TOKEN_EXP));
-            refreshToken.expiration = new Date(Date.now() + (Number(process.env.REFRESH_TOKEN_EXPIRATION) * 1000));
+            const accessToken = await this.container.tokens.encode<AccessTokenData>({ userId: refreshToken.user.id }, process.env.ACCESS_TOKEN_KEY, parseInt(process.env.ACCESS_TOKEN_EXP, 10));
+            refreshToken.expiration = new Date(Date.now() + (parseInt(process.env.REFRESH_TOKEN_EXP, 10) * 1000));
             await refreshToken.save();
             return res.status(200).json({ accessToken });
         } catch (err) {
