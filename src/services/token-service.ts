@@ -66,3 +66,15 @@ export default class TokenService extends Service {
 export interface TokenData {
     userId: string;
 }
+
+/**
+ * Access Token data interface.
+ */
+// tslint:disable-next-line: no-empty-interface
+export interface AccessTokenData extends TokenData {}
+
+/**
+ * Refresh Token data interface.
+ */
+// tslint:disable-next-line: no-empty-interface
+export interface RefreshTokenData extends TokenData {}
