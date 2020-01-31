@@ -71,7 +71,7 @@ function createSchema(container: ServiceContainer) {
                 this.password = await container.crypto.hash(this.password, Number(process.env.HASH_SALT));
                 return next();
             } catch (err) {
-                container.log.log(err, { severity: 'ERROR' });
+                container.log.error(err);
                 return next(err);
             }
         }
