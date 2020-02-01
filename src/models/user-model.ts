@@ -65,7 +65,7 @@ function createSchema(container: ServiceContainer) {
     });
 
     // Password hash validation
-    schema.pre('validate', async function(this: UserInstance, next) {
+    schema.pre('save', async function(this: UserInstance, next) {
         if (this.password !== undefined) { // Validates the password only if filled
             try {
                 this.password = await container.crypto.hash(this.password, parseInt(process.env.HASH_SALT, 10));
