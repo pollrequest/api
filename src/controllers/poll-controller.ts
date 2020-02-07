@@ -155,7 +155,13 @@ export default class PollController extends Controller {
             poll.choices = req.body.choices;
             poll.comments = req.body.comments;
             await poll.save();
-            return res.status(200).json();
+            return res.status(200).json({
+                links: [{
+                    rel: 'gets the poll',
+                    href: `${req.protocol}://${req.hostname}/polls/${poll.id}`
+                }],
+                id: poll.id
+            });
         } catch (err) {
             this.logger.error(err, { type: 'endpoints' });
             return res.status(500).json({ error: err.message });
@@ -195,7 +201,13 @@ export default class PollController extends Controller {
                 poll.comments = req.body.comments;
             }
             await poll.save();
-            return res.status(200).json();
+            return res.status(200).json({
+                links: [{
+                    rel: 'gets the poll',
+                    href: `${req.protocol}://${req.hostname}/polls/${poll.id}`
+                }],
+                id: poll.id
+            });
         } catch (err) {
             this.logger.error(err, { type: 'endpoints' });
             return res.status(500).json({ error: err.message });
