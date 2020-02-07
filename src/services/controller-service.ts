@@ -4,6 +4,7 @@ import UserController from '../controllers/user-controller';
 import Service from './service';
 import ServiceContainer from './service-container';
 import AuthenticationController from '../controllers/authentication-controller';
+import PollController from '../controllers/poll-controller';
 
 /**
  * Controllers service class.
@@ -25,6 +26,7 @@ export default class ControllerService extends Service {
         super(container);
         this.controllers = [
             new AuthenticationController(container),
+            new PollController(container),
             new UserController(container)
         ];
     }
