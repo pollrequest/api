@@ -45,7 +45,7 @@ export default class AuthenticationController extends Controller {
             return res.status(201).json({
                 links: [{
                     rel: 'login',
-                    href: `http://${req.hostname}/auth/signin`
+                    href: `${req.protocol}://${req.hostname}/auth/signin`
                 }],
                 id: user.id
             });
