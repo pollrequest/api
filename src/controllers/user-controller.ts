@@ -125,7 +125,13 @@ export default class UserController extends Controller {
             user.name = req.body.name;
             user.password = req.body.password;
             await user.save();
-            return res.status(200).json();
+            return res.status(200).json({
+                links: [{
+                    rel: 'Gets the modified user',
+                    href: `${req.protocol}://${req.hostname}${this.rootUri}/${user.id}`
+                }],
+                id: user.id
+            });
         } catch (err) {
             this.logger.error(err, { type: 'endpoints' });
             return res.status(500).json({ error: err.message });
@@ -159,7 +165,13 @@ export default class UserController extends Controller {
                 user.password = req.body.password;
             }
             await user.save();
-            return res.status(200).json();
+            return res.status(200).json({
+                links: [{
+                    rel: 'Gets the updated user',
+                    href: `${req.protocol}://${req.hostname}${this.rootUri}/${user.id}`
+                }],
+                id: user.id
+            });
         } catch (err) {
             this.logger.error(err, { type: 'endpoints' });
             return res.status(500).json({ error: err.message });
