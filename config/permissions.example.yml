@@ -1,0 +1,8 @@
+roles:
+  user:
+    default: true
+    permissions:
+      - "user.view.all"
+  admin:
+    permissions:
+      - "user.delete"
