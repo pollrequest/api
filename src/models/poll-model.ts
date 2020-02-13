@@ -65,13 +65,20 @@ function createPollSchema() {
             type: optionsSubSchema,
             default: optionsSubSchema
         },
-        choices: [{
-            type: createChoicesSubSchema(),
-            required: true
-        }],
-        comments: [{
-            type: createCommentsSubSchema()
-        }]
+        choices: {
+            type: [createChoicesSubSchema()],
+            required: true,
+            default: [],
+            validate: {
+                validator: (choices: []) => {
+                    return choices.length >= 2;
+                },
+                message: 'Choices must be 2 minimum'
+            }
+        },
+        comments: {
+            type: [createCommentsSubSchema()]
+        }
     });
     return schema;
 }
@@ -109,9 +116,9 @@ function createChoicesSubSchema() {
             required: true,
             maxlength: 50
         },
-        voters: [{
-            type: createVotersSubSchema()
-        }]
+        voters: {
+            type: [createVotersSubSchema()]
+        }
     });
     return schema;
 }
