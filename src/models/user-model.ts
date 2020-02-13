@@ -10,6 +10,7 @@ export interface UserAttributes extends Attributes {
     email: string;
     name: string;
     password: string;
+    role: string;
 }
 
 /**
@@ -35,6 +36,7 @@ export default function createModel(container: ServiceContainer, mongoose: Mongo
  * @returns User schema
  */
 function createSchema(container: ServiceContainer) {
+    const roles = Object.keys(container.config.permissions.roles);
     const schema = new Schema({
         email: {
             type: Schema.Types.String,
@@ -53,6 +55,12 @@ function createSchema(container: ServiceContainer) {
             required: true,
             minlength: 8,
             select: false // Par défaut retourne pas le mot de passe (dans les find)
+        },
+        role: {
+            type: Schema.Types.String,
+            required: [true, 'Role is required'],
+            enum: roles,
+            default: roles.find(role => container.config.permissions.roles[role].default)
         }
     }, {
         timestamps: true

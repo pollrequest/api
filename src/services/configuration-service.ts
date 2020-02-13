@@ -12,6 +12,7 @@ export default class ConfigurationService extends Service {
 
     private _api: APIConfiguration | null;
     private _services: ServicesConfiguration | null;
+    private _permissions: PermissionsConfiguration | null;
 
     /**
      * Creates a new configuration service.
@@ -22,6 +23,7 @@ export default class ConfigurationService extends Service {
         super(container);
         this._api = null;
         this._services = null;
+        this._permissions = null;
     }
 
     /**
@@ -75,6 +77,14 @@ export default class ConfigurationService extends Service {
         }
         return this._services;
     }
+
+    public get permissions(): PermissionsConfiguration {
+        if (!this._permissions) {
+            this._permissions = this.loadSync<PermissionsConfiguration>('config/permissions.yml', 'YAML');
+            this.container.log.info('Loaded permissions configuration');
+        }
+        return this._permissions;
+    }
 }
 
 /**
@@ -95,5 +105,17 @@ export interface APIConfiguration {
 export interface ServicesConfiguration {
     log: {
         dateFormat: string;
+    };
+}
+
+/**
+ * Permissions configuration interface.
+ */
+export interface PermissionsConfiguration {
+    roles: {
+        [key: string]: {
+            default?: boolean;
+            permissions: string[]
+        };
     };
 }

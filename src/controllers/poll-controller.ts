@@ -66,7 +66,9 @@ export default class PollController extends Controller {
                 title: req.body.title,
                 author: res.locals.user || null,
                 options: req.body.options,
-                choices: req.body.choices
+                choices: req.body.choices?.map((choiceLabel: string) => {
+                    return { label: choiceLabel };
+                })
             });
             return res.status(201).json({
                 links: [{
@@ -118,7 +120,7 @@ export default class PollController extends Controller {
      */
     public async getPollHandler(req: Request, res: Response): Promise<any> {
         try {
-            const poll = await this.container.db.polls.findById(req.params.id);
+            const poll = await this.container.db.polls.findById(req.params.id).populate('author');
             if (!poll) {
                 return res.status(404).json({ error: 'Poll not found' });
             }
@@ -142,7 +144,7 @@ export default class PollController extends Controller {
      */
     public async listPollsHandler(req: Request, res: Response): Promise<any> {
         try {
-            const polls = await this.container.db.polls.find();
+            const polls = await this.container.db.polls.find().populate('author');
             return res.status(200).json(polls);
         } catch (err) {
             this.logger.error(err, { type: 'endpoints' });
@@ -170,8 +172,6 @@ export default class PollController extends Controller {
             poll.title = req.body.title;
             poll.author = req.body.author;
             poll.options = req.body.options;
-            poll.choices = req.body.choices;
-            poll.comments = req.body.comments;
             await poll.save();
             return res.status(200).json({
                 links: [{
@@ -211,12 +211,6 @@ export default class PollController extends Controller {
             }
             if (req.body.options) {
                 poll.options = req.body.options;
-            }
-            if (req.body.choices) {
-                poll.choices = req.body.choices;
-            }
-            if (req.body.comments) {
-                poll.comments = req.body.comments;
             }
             await poll.save();
             return res.status(200).json({

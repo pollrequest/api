@@ -6,6 +6,7 @@ import DatabaseService from './database-service';
 import EnvironmentService from './environment-service';
 import ExpressService from './express-service';
 import LogService from './log-service';
+import PermissionService from './permission-service';
 import ServerService from './server-service';
 import TokenService from './token-service';
 
@@ -43,6 +44,7 @@ export default class ServiceContainer {
     private _auth: AuthenticationService | null;
     private _crypto: CryptoService | null;
     private _tokens: TokenService | null;
+    private _perms: PermissionService | null;
 
     /**
      * Creates a new services container.
@@ -58,6 +60,7 @@ export default class ServiceContainer {
         this._auth = null;
         this._crypto = null;
         this._tokens = null;
+        this._perms = null;
         this.env.load(); // Autoload environment
     }
 
@@ -139,5 +142,13 @@ export default class ServiceContainer {
             this.log.info('Loaded tokens service', { type: 'service-container' });
         }
         return this._tokens;
+    }
+
+    public get perms(): PermissionService {
+        if (!this._perms) {
+            this._perms = new PermissionService(this);
+            this.log.info('Loaded permissions service', { type: 'service-container' });
+        }
+        return this._perms;
     }
 }
