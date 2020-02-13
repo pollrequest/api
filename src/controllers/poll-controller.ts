@@ -252,7 +252,7 @@ export default class PollController extends Controller {
                     rel: 'gets the created comment',
                     href: `${req.protocol}://${req.hostname}/polls/${poll.id}/comments/${poll.comments[poll.comments.length -1]._id}`
                 }],
-                id: poll.id
+                id: poll.comments[poll.comments.length -1]._id
             });
         } catch (err) {
             this.logger.error(err, { type: 'endpoints' });
@@ -275,6 +275,10 @@ export default class PollController extends Controller {
             const poll = await this.container.db.polls.findById(req.params.pollId);
             if (!poll) {
                 return res.status(404).json({ error: 'Poll not found' });
+            }
+            const com = poll.comments.find(comment => comment._id == req.params.commentId);
+            if (!com) {
+                return res.status(404).json({ error: 'Comment not found' });
             }
             _.remove(poll.comments, comment => comment._id == req.params.commentId);
             poll.markModified('comments');
@@ -364,7 +368,7 @@ export default class PollController extends Controller {
                     rel: 'gets the comments',
                     href: `${req.protocol}://${req.hostname}/polls/${poll.id}/comments/${com._id}`
                 }],
-                id: poll.id
+                id: com._id
             });
         } catch (err) {
             this.logger.error(err, { type: 'endpoints' });
@@ -404,7 +408,7 @@ export default class PollController extends Controller {
                     rel: 'gets the comments',
                     href: `${req.protocol}://${req.hostname}/polls/${poll.id}/comments/${com._id}`
                 }],
-                id: poll.id
+                id: com._id
             });
         } catch (err) {
             this.logger.error(err, { type: 'endpoints' });
