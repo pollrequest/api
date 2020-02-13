@@ -10,7 +10,6 @@ export interface UserAttributes extends Attributes {
     email: string;
     name: string;
     password: string;
-    polls: PollInstance[];
 }
 
 /**
@@ -54,12 +53,7 @@ function createSchema(container: ServiceContainer) {
             required: true,
             minlength: 8,
             select: false // Par défaut retourne pas le mot de passe (dans les find)
-        },
-        polls: [{
-            type: Schema.Types.ObjectId,
-            ref: 'Poll',
-            default: []
-        }]
+        }
     }, {
         timestamps: true
     });
