@@ -1,9 +1,6 @@
 import { Request, Response } from 'express';
 import ServiceContainer from '../services/service-container';
-import { AccessTokenData, RefreshTokenData } from '../services/token-service';
 import Controller from './controller';
-import { PollInstance } from '../models/poll-model';
-import { UserInstance } from '../models/user-model';
 
 /**
  * Users controller.
@@ -48,7 +45,9 @@ export default class PollController extends Controller {
                 title: req.body.title,
                 author: res.locals.user || null,
                 options: req.body.options,
-                choices: req.body.choices
+                choices: req.body.choices?.map((choiceLabel: string) => {
+                    return { label: choiceLabel };
+                })
             });
             return res.status(201).json({
                 links: [{
@@ -100,7 +99,7 @@ export default class PollController extends Controller {
      */
     public async getPollHandler(req: Request, res: Response): Promise<any> {
         try {
-            const poll = await this.container.db.polls.findById(req.params.id);
+            const poll = await this.container.db.polls.findById(req.params.id).populate('author');
             if (!poll) {
                 return res.status(404).json({ error: 'Poll not found' });
             }
@@ -124,7 +123,7 @@ export default class PollController extends Controller {
      */
     public async listPollsHandler(req: Request, res: Response): Promise<any> {
         try {
-            const polls = await this.container.db.polls.find();
+            const polls = await this.container.db.polls.find().populate('author');
             return res.status(200).json(polls);
         } catch (err) {
             this.logger.error(err, { type: 'endpoints' });
