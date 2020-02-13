@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
+import _ from 'lodash';
 import ServiceContainer from '../services/service-container';
 import Controller from './controller';
-import _ from 'lodash';
 
 /**
  * Users controller.
@@ -250,9 +250,9 @@ export default class PollController extends Controller {
             return res.status(201).json({
                 links: [{
                     rel: 'gets the created comment',
-                    href: `${req.protocol}://${req.hostname}/polls/${poll.id}/comments/${poll.comments[poll.comments.length -1]._id}`
+                    href: `${req.protocol}://${req.hostname}/polls/${poll.id}/comments/${poll.comments[poll.comments.length - 1]._id}`
                 }],
-                id: poll.comments[poll.comments.length -1]._id
+                id: poll.comments[poll.comments.length - 1]._id
             });
         } catch (err) {
             this.logger.error(err, { type: 'endpoints' });
@@ -396,10 +396,10 @@ export default class PollController extends Controller {
             if (!com) {
                 return res.status(404).json({ error: 'Comment not found' });
             }
-            if(req.body.author) {
+            if (req.body.author) {
                 com.author = req.body.author;
             }
-            if(req.body.content) {
+            if (req.body.content) {
                 com.content =  req.body.content;
             }
             await poll.save();
