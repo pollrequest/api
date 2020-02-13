@@ -124,7 +124,6 @@ export default class UserController extends Controller {
             user.email = req.body.email;
             user.name = req.body.name;
             user.password = req.body.password;
-            user.polls = req.body.polls;
             await user.save();
             return res.status(200).json();
         } catch (err) {
@@ -158,9 +157,6 @@ export default class UserController extends Controller {
             }
             if (req.body.password) {
                 user.password = req.body.password;
-            }
-            if (req.body.polls) {
-                user.polls = req.body.polls;
             }
             await user.save();
             return res.status(200).json();
