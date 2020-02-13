@@ -22,7 +22,7 @@ export interface PollAttributes extends Attributes {
         }];
     }];
     comments: [{
-        _id: string;
+        _id?: string;
         author: UserInstance;
         content: string;
     }];
