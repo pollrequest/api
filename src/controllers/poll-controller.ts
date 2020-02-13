@@ -342,7 +342,6 @@ export default class PollController extends Controller {
         }
     }
 
-    // TODO ENDPONT MODIFY COMMENT 
     /**
      * Modify a comment
      * 
