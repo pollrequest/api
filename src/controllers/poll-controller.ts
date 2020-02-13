@@ -152,8 +152,6 @@ export default class PollController extends Controller {
             poll.title = req.body.title;
             poll.author = req.body.author;
             poll.options = req.body.options;
-            poll.choices = req.body.choices;
-            poll.comments = req.body.comments;
             await poll.save();
             return res.status(200).json({
                 links: [{
@@ -193,12 +191,6 @@ export default class PollController extends Controller {
             }
             if (req.body.options) {
                 poll.options = req.body.options;
-            }
-            if (req.body.choices) {
-                poll.choices = req.body.choices;
-            }
-            if (req.body.comments) {
-                poll.comments = req.body.comments;
             }
             await poll.save();
             return res.status(200).json({
