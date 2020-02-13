@@ -39,8 +39,7 @@ export default class AuthenticationController extends Controller {
             const user = await this.container.db.users.create({
                 email: req.body.email,
                 name: req.body.name,
-                password: req.body.password,
-                polls: req.body.polls
+                password: req.body.password
             });
             return res.status(201).json({
                 links: [{
