@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { UserInstance } from '../models/user-model';
 import ServiceContainer from '../services/service-container';
-import Controller from './controller';
+import Controller, { Link } from './controller';
 
 /**
  * Users controller.
@@ -55,7 +55,14 @@ export default class UserController extends Controller {
                     error_description: 'User not found'
                 }));
             }
-            return res.status(200).json({ user });
+            return res.status(200).json({
+                user,
+                links: [{
+                    rel: 'Gets the user informations from his ID',
+                    action: 'GET',
+                    href: `${req.protocol}://${req.hostname}${this.rootUri}/${user.id}`
+                }] as Link[]
+            });
         } catch (err) {
             return res.status(500).json(this.container.errors.formatServerError());
         }
@@ -101,7 +108,18 @@ export default class UserController extends Controller {
                     error_description: 'User not found'
                 }));
             }
-            return res.status(200).json({ user });
+            return res.status(200).json({
+                user,
+                links: [{
+                    rel: 'Modify the user',
+                    action: 'PUT',
+                    href: `${req.protocol}://${req.hostname}${this.rootUri}/${user.id}`
+                }, {
+                    rel: 'Update the user',
+                    action: 'PATCH',
+                    href: `${req.protocol}://${req.hostname}${this.rootUri}/${user.id}`
+                }] as Link[]
+            });
         } catch (err) {
             return res.status(500).json(this.container.errors.formatServerError());
         }
@@ -132,11 +150,12 @@ export default class UserController extends Controller {
             user.password = req.body.password;
             await user.save();
             return res.status(200).json({
+                id: user.id,
                 links: [{
                     rel: 'Gets the modified user',
+                    action: 'GET',
                     href: `${req.protocol}://${req.hostname}${this.rootUri}/${user.id}`
-                }],
-                id: user.id
+                }] as Link[]
             });
         } catch (err) {
             if (err.name === 'ValidationError') {
@@ -177,11 +196,12 @@ export default class UserController extends Controller {
             }
             await user.save();
             return res.status(200).json({
+                id: user.id,
                 links: [{
                     rel: 'Gets the updated user',
+                    action: 'GET',
                     href: `${req.protocol}://${req.hostname}${this.rootUri}/${user.id}`
-                }],
-                id: user.id
+                }] as Link[]
             });
         } catch (err) {
             if (err.name === 'ValidationError') {

@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import _ from 'lodash';
 import { PollInstance } from '../models/poll-model';
 import ServiceContainer from '../services/service-container';
-import Controller from './controller';
+import Controller, { Link } from './controller';
 
 /**
  * Users controller.
@@ -74,11 +74,12 @@ export default class PollController extends Controller {
                 })
             });
             return res.status(201).json({
+                id: poll.id,
                 links: [{
-                    rel: 'gets the created poll',
-                    href: `${req.protocol}://${req.hostname}/polls/${poll.id}`
-                }],
-                id: poll.id
+                    rel: 'Gets the created poll',
+                    action: 'GET',
+                    href: `${req.protocol}://${req.hostname}${this.rootUri}/${poll.id}`
+                }] as Link[]
             });
         } catch (err) {
             if (err.name === 'ValidationError') {
@@ -134,7 +135,22 @@ export default class PollController extends Controller {
                     error_description: 'Poll not found'
                 }));
             }
-            return res.status(200).json({ poll });
+            return res.status(200).json({
+                poll,
+                links: [{
+                    rel: 'Modifies the poll',
+                    action: 'PUT',
+                    href: `${req.protocol}://${req.hostname}${this.rootUri}/${poll.id}`
+                }, {
+                    rel: 'Updates the poll',
+                    action: 'PATCH',
+                    href: `${req.protocol}://${req.hostname}${this.rootUri}/${poll.id}`
+                }, , {
+                    rel: 'Adds a vote',
+                    action: 'PATCH',
+                    href: `${req.protocol}://${req.hostname}${this.rootUri}/${poll.id}/vote`
+                }] as Link[]
+            });
         } catch (err) {
             return res.status(500).json(this.container.errors.formatServerError());
         }
@@ -185,11 +201,12 @@ export default class PollController extends Controller {
             poll.options = req.body.options;
             await poll.save();
             return res.status(200).json({
+                id: poll.id,
                 links: [{
-                    rel: 'gets the poll',
-                    href: `${req.protocol}://${req.hostname}/polls/${poll.id}`
-                }],
-                id: poll.id
+                    rel: 'Gets the modified poll',
+                    action: 'GET',
+                    href: `${req.protocol}://${req.hostname}${this.rootUri}/${poll.id}`
+                }] as Link[]
             });
         } catch (err) {
             if (err.name === 'ValidationError') {
@@ -230,11 +247,12 @@ export default class PollController extends Controller {
             }
             await poll.save();
             return res.status(200).json({
+                id: poll.id,
                 links: [{
-                    rel: 'gets the poll',
-                    href: `${req.protocol}://${req.hostname}/polls/${poll.id}`
-                }],
-                id: poll.id
+                    rel: 'Gets the updated poll',
+                    action: 'GET',
+                    href: `${req.protocol}://${req.hostname}${this.rootUri}/${poll.id}`
+                }] as Link[]
             });
         } catch (err) {
             if (err.name === 'ValidationError') {
@@ -268,13 +286,15 @@ export default class PollController extends Controller {
                 author: req.body.author,
                 content: req.body.content
             });
+            const comment = poll.comments[poll.comments.length - 1];
             await poll.save();
             return res.status(201).json({
+                id: comment._id,
                 links: [{
-                    rel: 'gets the created comment',
-                    href: `${req.protocol}://${req.hostname}/polls/${poll.id}/comments/${poll.comments[poll.comments.length - 1]._id}`
-                }],
-                id: poll.comments[poll.comments.length - 1]._id
+                    rel: 'Gets the created comment',
+                    action: 'GET',
+                    href: `${req.protocol}://${req.hostname}${this.rootUri}/${poll.id}/comments/${comment._id}`
+                }] as Link[]
             });
         } catch (err) {
             if (err.name === 'ValidationError') {
@@ -350,7 +370,18 @@ export default class PollController extends Controller {
                     error_description: 'Comment not found'
                 }));
             }
-            return res.status(200).json({ com });
+            return res.status(200).json({
+                com,
+                links: [{
+                    rel: 'Modifies the comment',
+                    action: 'PUT',
+                    href: `${req.protocol}://${req.hostname}${this.rootUri}/${poll.id}/comments/${com._id}`
+                }, {
+                    rel: 'Updates the comment',
+                    action: 'PATCH',
+                    href: `${req.protocol}://${req.hostname}${this.rootUri}/${poll.id}/comments/${com._id}`
+                }] as Link[]
+            });
         } catch (err) {
             return res.status(500).json(this.container.errors.formatServerError());
         }
@@ -413,11 +444,12 @@ export default class PollController extends Controller {
             com.content =  req.body.content;
             await poll.save();
             return res.status(200).json({
+                id: com._id,
                 links: [{
-                    rel: 'gets the comments',
-                    href: `${req.protocol}://${req.hostname}/polls/${poll.id}/comments/${com._id}`
-                }],
-                id: com._id
+                    rel: 'Gets the modified comment',
+                    action: 'GET',
+                    href: `${req.protocol}://${req.hostname}${this.rootUri}/${poll.id}/comments/${com._id}`
+                }] as Link[]
             });
         } catch (err) {
             if (err.name === 'ValidationError') {
@@ -462,11 +494,12 @@ export default class PollController extends Controller {
             }
             await poll.save();
             return res.status(200).json({
+                id: com._id,
                 links: [{
-                    rel: 'gets the comments',
-                    href: `${req.protocol}://${req.hostname}/polls/${poll.id}/comments/${com._id}`
-                }],
-                id: com._id
+                    rel: 'Gets the updated comment',
+                    action: 'GET',
+                    href: `${req.protocol}://${req.hostname}${this.rootUri}/${poll.id}/comments/${com._id}`
+                }] as Link[]
             });
         } catch (err) {
             if (err.name === 'ValidationError') {
@@ -535,8 +568,9 @@ export default class PollController extends Controller {
             return res.status(200).json({
                 links: [{
                     rel: 'Gets the voted poll',
+                    action: 'GET',
                     href: `${req.protocol}://${req.hostname}${this.rootUri}/${poll.id}`
-                }]
+                }] as Link[]
             });
         } catch (err) {
             if (err.name === 'ValidationError') {
