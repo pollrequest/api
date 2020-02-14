@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import ServiceContainer from '../services/service-container';
 import { AccessTokenData, RefreshTokenData } from '../services/token-service';
-import Controller from './controller';
+import Controller, { Link } from './controller';
 
 /**
  * Users controller.
@@ -42,11 +42,16 @@ export default class AuthenticationController extends Controller {
                 password: req.body.password
             });
             return res.status(201).json({
+                id: user.id,
                 links: [{
-                    rel: 'login',
-                    href: `${req.protocol}://${req.hostname}/auth/signin`
-                }],
-                id: user.id
+                    rel: 'Signin / Login',
+                    action: 'POST',
+                    href: `${req.protocol}://${req.hostname}${this.rootUri}/signin`
+                }, {
+                    rel: 'Gets the signed up user',
+                    action: 'GET',
+                    href: `${req.protocol}://${req.hostname}/users/${user.id}`
+                }] as Link[]
             });
         } catch (err) {
             if (err.name === 'ValidationError') {
@@ -89,8 +94,13 @@ export default class AuthenticationController extends Controller {
             });
             return res.status(200).json({
                 id: user.id,
-                accessToken,
-                refreshToken: refreshToken.token
+                access_token: accessToken,
+                refresh_token: refreshToken.token,
+                links: [{
+                    rel: 'Gets the signed in user',
+                    action: 'GET',
+                    href: `${req.protocol}://${req.hostname}/users/${user.id}`
+                }] as Link[]
             });
         } catch (err) {
             if (err.name === 'ValidationError') {
