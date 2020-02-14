@@ -9,7 +9,8 @@ build/
 
 # Configuration
 config/*
-!config/*.example.yml
+!config/*.example.*
+!config/swagger.json
 
 # Logs
 logs/
