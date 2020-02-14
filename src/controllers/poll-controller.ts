@@ -1,7 +1,8 @@
 import { Request, Response } from 'express';
+import _ from 'lodash';
+import { PollInstance } from '../models/poll-model';
 import ServiceContainer from '../services/service-container';
 import Controller from './controller';
-import _ from 'lodash';
 
 /**
  * Users controller.
@@ -31,6 +32,7 @@ export default class PollController extends Controller {
         this.listCommentsPollHandler = this.listCommentsPollHandler.bind(this);
         this.modifyCommentPollHandler = this.modifyCommentPollHandler.bind(this);
         this.updateCommentPollHandler = this.updateCommentPollHandler.bind(this);
+        this.voteHandler = this.voteHandler.bind(this);
 
         // Polls
         this.registerEndpoint({ method: 'POST', uri: '/', handlers: [this.container.auth.authenticateHandler, this.addPollHandler], description: 'Add a poll' });
@@ -39,6 +41,7 @@ export default class PollController extends Controller {
         this.registerEndpoint({ method: 'GET', uri: '/', handlers: [this.listPollsHandler], description: 'List all polls' });
         this.registerEndpoint({ method: 'PUT', uri: '/:id', handlers: [this.modifyPollHandler], description: 'Modify a poll' });
         this.registerEndpoint({ method: 'PATCH', uri: '/:id', handlers: [this.updatePollHandler], description: 'Update a poll' });
+        this.registerEndpoint({ method: 'PATCH', uri: '/:id/vote', handlers: [this.container.auth.authenticateHandler, this.voteHandler], description: 'Votes for a choice' });
 
         // Comments
         this.registerEndpoint({ method: 'POST', uri: '/:id/comments', handlers: [this.container.auth.authenticateHandler, this.addCommentPollHandler], description: 'Add a comment to a poll' });
@@ -233,8 +236,9 @@ export default class PollController extends Controller {
      * - Method : `POST`
      * - URI : `/:id/comments`
      * 
-     * @param req 
-     * @param res 
+     * @param req Express Request
+     * @param res Express Response
+     * @async
      */
     public async addCommentPollHandler(req: Request, res: Response): Promise<any> {
         try {
@@ -250,9 +254,9 @@ export default class PollController extends Controller {
             return res.status(201).json({
                 links: [{
                     rel: 'gets the created comment',
-                    href: `${req.protocol}://${req.hostname}/polls/${poll.id}/comments/${poll.comments[poll.comments.length -1]._id}`
+                    href: `${req.protocol}://${req.hostname}/polls/${poll.id}/comments/${poll.comments[poll.comments.length - 1]._id}`
                 }],
-                id: poll.comments[poll.comments.length -1]._id
+                id: poll.comments[poll.comments.length - 1]._id
             });
         } catch (err) {
             this.logger.error(err, { type: 'endpoints' });
@@ -267,8 +271,9 @@ export default class PollController extends Controller {
      * - Method : `DELETE`
      * - URI : `/:pollId/comments/:commentId`
      * 
-     * @param req 
-     * @param res 
+     * @param req Express Request
+     * @param res Express Response
+     * @async
      */
     public async deleteCommentPollHandler(req: Request, res: Response): Promise<any> {
         try {
@@ -297,8 +302,9 @@ export default class PollController extends Controller {
      * - Method : `GET`
      * - URI : `/:pollId/comments/:commentId`
      * 
-     * @param req 
-     * @param res 
+     * @param req Express Request
+     * @param res Express Response
+     * @async
      */
     public async getCommentPollHandler(req: Request, res: Response): Promise<any> {
         try {
@@ -324,8 +330,9 @@ export default class PollController extends Controller {
      * - Method : `GET`
      * - URI : `/:id/comments`
      * 
-     * @param req 
-     * @param res 
+     * @param req Express Request
+     * @param res Express Response
+     * @async
      */
     public async listCommentsPollHandler(req: Request, res: Response): Promise<any> {
         try {
@@ -347,8 +354,9 @@ export default class PollController extends Controller {
      * - Method : `PUT`
      * - URI : `/:pollId/comments/:commentId`
      * 
-     * @param req 
-     * @param res 
+     * @param req Express Request
+     * @param res Express Response
+     * @async
      */
     public async modifyCommentPollHandler(req: Request, res: Response): Promise<any> {
         try {
@@ -383,8 +391,9 @@ export default class PollController extends Controller {
      * - Method : `PATCH`
      * - URI : `/:pollId/comments/:commentId`
      * 
-     * @param req 
-     * @param res 
+     * @param req Express Request
+     * @param res Express Response
+     * @async
      */
     public async updateCommentPollHandler(req: Request, res: Response): Promise<any> {
         try {
@@ -396,10 +405,10 @@ export default class PollController extends Controller {
             if (!com) {
                 return res.status(404).json({ error: 'Comment not found' });
             }
-            if(req.body.author) {
+            if (req.body.author) {
                 com.author = req.body.author;
             }
-            if(req.body.content) {
+            if (req.body.content) {
                 com.content =  req.body.content;
             }
             await poll.save();
@@ -414,5 +423,76 @@ export default class PollController extends Controller {
             this.logger.error(err, { type: 'endpoints' });
             return res.status(500).json({ error: err.message });
         }
+    }
+
+    /**
+     * Votes for a choice.
+     * 
+     * This method is a handler / endoint :
+     * - Method : `PATCH`
+     * - URI : `/:id/vote`
+     * 
+     * @param req Express Request
+     * @param res Express Response
+     * @async
+     */
+    public async voteHandler(req: Request, res: Response): Promise<any> {
+        try {
+            const poll = await this.container.db.polls.findById(req.params.id);
+            if (!poll) {
+                return res.status(404).json({ error: 'Poll not found' });
+            }
+            if (req.body.choices == null || req.body.choices.length === 0) {
+                return res.status(400).json({ error: 'choices are required' });
+            }
+            const selectedChoices = [];
+            for await (const selectedChoice of req.body?.choices) {
+                const choice = poll.choices.find(currentChoice => currentChoice._id == selectedChoice);
+                if (choice == null) {
+                    return res.status(404).json({ error: `Choice ${selectedChoice} not found` });
+                }
+                selectedChoices.push(choice);
+            }
+            if (!poll.options.multiple && selectedChoices.length > 1) { // Multiple checking
+                return res.status(403).json({ error: 'Multiple choices are not permitted' });
+            }
+            if (poll.options.ipChecking && await this.ipExists(poll, req.ip)) { // IP checking
+                return res.status(403).json({ error: 'Already voted' });
+            }
+            for await (const choice of selectedChoices) {
+                choice.voters.push({
+                    ip: req.ip,
+                    voter: res.locals.user || null
+                });
+            }
+            await poll.save();
+            return res.status(200).json({
+                links: [{
+                    rel: 'Gets the voted poll',
+                    href: `${req.protocol}://${req.hostname}${this.rootUri}/${poll.id}`
+                }]
+            });
+        } catch (err) {
+            return res.status(500).json({ error: err.message });
+        }
+    }
+
+    /**
+     * Checks if an IP exists on a poll voters.
+     * 
+     * This method checks voters in all choices for a poll.
+     * 
+     * @param poll Target poll
+     * @param ip IP to check
+     */
+    private async ipExists(poll: PollInstance, ip: string): Promise<boolean> {
+        for await (const choice of poll.choices) {
+            for await (const voter of choice.voters) {
+                if (voter.ip === ip) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }
