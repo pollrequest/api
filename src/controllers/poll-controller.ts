@@ -81,8 +81,7 @@ export default class PollController extends Controller {
                 id: poll.id
             });
         } catch (err) {
-            this.logger.error(err, { type: 'endpoints' });
-            return res.status(500).json({ error: err.message });
+            return res.status(500).json(this.container.errors.formatServerError());
         }
     }
 
@@ -105,8 +104,7 @@ export default class PollController extends Controller {
             }
             return res.status(204).json();
         } catch (err) {
-            this.logger.error(err, { type: 'endpoints' });
-            return res.status(500).json({ error: err.message });
+            return res.status(500).json(this.container.errors.formatServerError());
         }
     }
 
@@ -129,8 +127,7 @@ export default class PollController extends Controller {
             }
             return res.status(200).json(poll);
         } catch (err) {
-            this.logger.error(err, { type: 'endpoints' });
-            return res.status(500).json({ error: err.message });
+            return res.status(500).json(this.container.errors.formatServerError());
         }
     }
 
@@ -150,8 +147,7 @@ export default class PollController extends Controller {
             const polls = await this.container.db.polls.find().populate('author');
             return res.status(200).json(polls);
         } catch (err) {
-            this.logger.error(err, { type: 'endpoints' });
-            return res.status(500).json({ error: err.message });
+            return res.status(500).json(this.container.errors.formatServerError());
         }
     }
 
@@ -184,8 +180,7 @@ export default class PollController extends Controller {
                 id: poll.id
             });
         } catch (err) {
-            this.logger.error(err, { type: 'endpoints' });
-            return res.status(500).json({ error: err.message });
+            return res.status(500).json(this.container.errors.formatServerError());
         }
     }
 
@@ -224,8 +219,7 @@ export default class PollController extends Controller {
                 id: poll.id
             });
         } catch (err) {
-            this.logger.error(err, { type: 'endpoints' });
-            return res.status(500).json({ error: err.message });
+            return res.status(500).json(this.container.errors.formatServerError());
         }
     }
 
@@ -259,8 +253,7 @@ export default class PollController extends Controller {
                 id: poll.comments[poll.comments.length - 1]._id
             });
         } catch (err) {
-            this.logger.error(err, { type: 'endpoints' });
-            return res.status(500).json({ error: err.message });
+            return res.status(500).json(this.container.errors.formatServerError());
         }
     }
 
@@ -290,8 +283,7 @@ export default class PollController extends Controller {
             await poll.save();
             return res.status(204).json();
         } catch (err) {
-            this.logger.error(err, { type: 'endpoints' });
-            return res.status(500).json({ error: err.message });
+            return res.status(500).json(this.container.errors.formatServerError());
         }
     }
 
@@ -318,8 +310,7 @@ export default class PollController extends Controller {
             }
             return res.status(201).json(com);
         } catch (err) {
-            this.logger.error(err, { type: 'endpoints' });
-            return res.status(500).json({ error: err.message });
+            return res.status(500).json(this.container.errors.formatServerError());
         }
     }
 
@@ -342,8 +333,7 @@ export default class PollController extends Controller {
             }
             return res.status(201).json(poll.comments);
         } catch (err) {
-            this.logger.error(err, { type: 'endpoints' });
-            return res.status(500).json({ error: err.message });
+            return res.status(500).json(this.container.errors.formatServerError());
         }
     }
 
@@ -379,8 +369,7 @@ export default class PollController extends Controller {
                 id: com._id
             });
         } catch (err) {
-            this.logger.error(err, { type: 'endpoints' });
-            return res.status(500).json({ error: err.message });
+            return res.status(500).json(this.container.errors.formatServerError());
         }
     }
 
@@ -420,8 +409,7 @@ export default class PollController extends Controller {
                 id: com._id
             });
         } catch (err) {
-            this.logger.error(err, { type: 'endpoints' });
-            return res.status(500).json({ error: err.message });
+            return res.status(500).json(this.container.errors.formatServerError());
         }
     }
 
@@ -473,7 +461,7 @@ export default class PollController extends Controller {
                 }]
             });
         } catch (err) {
-            return res.status(500).json({ error: err.message });
+            return res.status(500).json(this.container.errors.formatServerError());
         }
     }
 

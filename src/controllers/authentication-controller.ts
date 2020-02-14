@@ -49,8 +49,7 @@ export default class AuthenticationController extends Controller {
                 id: user.id
             });
         } catch (err) {
-            this.logger.error(err, { type: 'endpoints' });
-            return res.status(500).json({ error: err.message });
+            return res.status(500).json(this.container.errors.formatServerError());
         }
     }
 
@@ -85,8 +84,7 @@ export default class AuthenticationController extends Controller {
                 refreshToken: refreshToken.token
             });
         } catch (err) {
-            this.logger.error(err, { type: 'endpoints' });
-            return res.status(500).json({ error: err.message });
+            return res.status(500).json(this.container.errors.formatServerError());
         }
     }
 
@@ -112,8 +110,7 @@ export default class AuthenticationController extends Controller {
             await refreshToken.save();
             return res.status(200).json({ accessToken });
         } catch (err) {
-            this.logger.error(err, { type: 'endpoints' });
-            return res.status(500).json(err);
+            return res.status(500).json(this.container.errors.formatServerError());
         }
     }
 }

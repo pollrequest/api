@@ -54,8 +54,7 @@ export default class UserController extends Controller {
             }
             return res.status(200).json(user);
         } catch (err) {
-            this.logger.error(err, { type: 'endpoints' });
-            return res.status(500).json({ error: err.message });
+            return res.status(500).json(this.container.errors.formatServerError());
         }
     }
 
@@ -75,8 +74,7 @@ export default class UserController extends Controller {
             const users = await this.container.db.users.find();
             return res.status(200).json(users);
         } catch (err) {
-            this.logger.error(err, { type: 'endpoints' });
-            return res.status(500).json({ error: err.message });
+            return res.status(500).json(this.container.errors.formatServerError());
         }
     }
 
@@ -99,8 +97,7 @@ export default class UserController extends Controller {
             }
             return res.status(200).json(user);
         } catch (err) {
-            this.logger.error(err, { type: 'endpoints' });
-            return res.status(500).json({ error: err.message });
+            return res.status(500).json(this.container.errors.formatServerError());
         }
     }
 
@@ -133,8 +130,7 @@ export default class UserController extends Controller {
                 id: user.id
             });
         } catch (err) {
-            this.logger.error(err, { type: 'endpoints' });
-            return res.status(500).json({ error: err.message });
+            return res.status(500).json(this.container.errors.formatServerError());
         }
     }
 
@@ -173,8 +169,7 @@ export default class UserController extends Controller {
                 id: user.id
             });
         } catch (err) {
-            this.logger.error(err, { type: 'endpoints' });
-            return res.status(500).json({ error: err.message });
+            return res.status(500).json(this.container.errors.formatServerError());
         }
     }
 
@@ -197,8 +192,7 @@ export default class UserController extends Controller {
             }
             return res.status(204).json();
         } catch (err) {
-            this.logger.error(err, { type: 'endpoints' });
-            return res.status(500).json({ error: err.message });
+            return res.status(500).json(this.container.errors.formatServerError());
         }
     }
 }
