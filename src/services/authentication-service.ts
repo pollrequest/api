@@ -46,7 +46,7 @@ export default class AuthenticationService extends Service {
                     res.locals.user = user;
                 }
             } catch (err) {
-                console.error(err);
+                this.container.log.error(err);
             }
         }
 
@@ -63,6 +63,9 @@ export default class AuthenticationService extends Service {
      * @param next Next handler
      */
     public async isAuthenticatedHandler(req: Request, res: Response, next: NextFunction): Promise<any> {
-        return res.locals.tokenData ? next() : res.status(401).json({ error: 'Not authenticated' });
+        return res.locals.tokenData ? next() : res.status(401).json(this.container.errors.formatErrors({
+            error: 'access_denied',
+            error_description: 'Not authenticated'
+        }));
     }
 }

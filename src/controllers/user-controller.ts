@@ -43,19 +43,21 @@ export default class UserController extends Controller {
     public async getMeHandler(req: Request, res: Response): Promise<any> {
         try {
             let user: UserInstance | null = null;
-            if (res.locals.user) { // First check : headers
+            if (res.locals.user) { // First check : headers (from middleware)
                 user = res.locals.user;
             } else if (req.body.token) { // If not in headers, second check : body
                 const tokenData = await this.container.tokens.decode(req.body.token, process.env.ACCESS_TOKEN_KEY);
                 user = await this.container.db.users.findById(tokenData.userId);
             }
             if (!user) {
-                return res.status(404).json({ error: 'User not found' });
+                return res.status(404).json(this.container.errors.formatErrors({
+                    error: 'not_found',
+                    error_description: 'User not found'
+                }));
             }
-            return res.status(200).json(user);
+            return res.status(200).json({ user });
         } catch (err) {
-            this.logger.error(err, { type: 'endpoints' });
-            return res.status(500).json({ error: err.message });
+            return res.status(500).json(this.container.errors.formatServerError());
         }
     }
 
@@ -73,10 +75,9 @@ export default class UserController extends Controller {
     public async getAllHandler(req: Request, res: Response): Promise<any> {
         try {
             const users = await this.container.db.users.find();
-            return res.status(200).json(users);
+            return res.status(200).json({ users });
         } catch (err) {
-            this.logger.error(err, { type: 'endpoints' });
-            return res.status(500).json({ error: err.message });
+            return res.status(500).json(this.container.errors.formatServerError());
         }
     }
 
@@ -95,12 +96,14 @@ export default class UserController extends Controller {
         try {
             const user = await this.container.db.users.findById(req.params.id);
             if (!user) {
-                return res.status(404).json({ error: 'User not found' });
+                return res.status(404).json(this.container.errors.formatErrors({
+                    error: 'not_found',
+                    error_description: 'User not found'
+                }));
             }
-            return res.status(200).json(user);
+            return res.status(200).json({ user });
         } catch (err) {
-            this.logger.error(err, { type: 'endpoints' });
-            return res.status(500).json({ error: err.message });
+            return res.status(500).json(this.container.errors.formatServerError());
         }
     }
 
@@ -119,7 +122,10 @@ export default class UserController extends Controller {
         try {
             const user = await this.container.db.users.findById(req.params.id);
             if (!user) {
-                return res.status(404).json({ error: 'User not found' });
+                return res.status(404).json(this.container.errors.formatErrors({
+                    error: 'not_found',
+                    error_description: 'User not found'
+                }));
             }
             user.email = req.body.email;
             user.name = req.body.name;
@@ -133,8 +139,10 @@ export default class UserController extends Controller {
                 id: user.id
             });
         } catch (err) {
-            this.logger.error(err, { type: 'endpoints' });
-            return res.status(500).json({ error: err.message });
+            if (err.name === 'ValidationError') {
+                return res.status(400).send(this.container.errors.formatErrors(...this.container.errors.translateMongooseValidationError(err)));
+            }
+            return res.status(500).json(this.container.errors.formatServerError());
         }
     }
 
@@ -153,7 +161,10 @@ export default class UserController extends Controller {
         try {
             const user = await this.container.db.users.findById(req.params.id);
             if (!user) {
-                return res.status(404).json({ error: 'User not found' });
+                return res.status(404).json(this.container.errors.formatErrors({
+                    error: 'not_found',
+                    error_description: 'User not found'
+                }));
             }
             if (req.body.email) {
                 user.email = req.body.email;
@@ -173,8 +184,10 @@ export default class UserController extends Controller {
                 id: user.id
             });
         } catch (err) {
-            this.logger.error(err, { type: 'endpoints' });
-            return res.status(500).json({ error: err.message });
+            if (err.name === 'ValidationError') {
+                return res.status(400).send(this.container.errors.formatErrors(...this.container.errors.translateMongooseValidationError(err)));
+            }
+            return res.status(500).json(this.container.errors.formatServerError());
         }
     }
 
@@ -193,12 +206,14 @@ export default class UserController extends Controller {
         try {
             const user = await this.container.db.users.findByIdAndDelete(req.params.id);
             if (!user) {
-                return res.status(404).json({ error: 'User not found' });
+                return res.status(404).json(this.container.errors.formatErrors({
+                    error: 'not_found',
+                    error_description: 'User not found'
+                }));
             }
             return res.status(204).json();
         } catch (err) {
-            this.logger.error(err, { type: 'endpoints' });
-            return res.status(500).json({ error: err.message });
+            return res.status(500).json(this.container.errors.formatServerError());
         }
     }
 }
