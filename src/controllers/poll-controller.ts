@@ -81,6 +81,9 @@ export default class PollController extends Controller {
                 id: poll.id
             });
         } catch (err) {
+            if (err.name === 'ValidationError') {
+                return res.status(400).send(this.container.errors.formatErrors(...this.container.errors.translateMongooseValidationError(err)));
+            }
             return res.status(500).json(this.container.errors.formatServerError());
         }
     }
@@ -100,7 +103,10 @@ export default class PollController extends Controller {
         try {
             const poll = await this.container.db.polls.findByIdAndDelete(req.params.id);
             if (!poll) {
-                return res.status(404).json({ error: 'Poll not found' });
+                return res.status(404).json(this.container.errors.formatErrors({
+                    error: 'not_found',
+                    error_description: 'Poll not found'
+                }));
             }
             return res.status(204).json();
         } catch (err) {
@@ -123,9 +129,12 @@ export default class PollController extends Controller {
         try {
             const poll = await this.container.db.polls.findById(req.params.id).populate('author');
             if (!poll) {
-                return res.status(404).json({ error: 'Poll not found' });
+                return res.status(404).json(this.container.errors.formatErrors({
+                    error: 'not_found',
+                    error_description: 'Poll not found'
+                }));
             }
-            return res.status(200).json(poll);
+            return res.status(200).json({ poll });
         } catch (err) {
             return res.status(500).json(this.container.errors.formatServerError());
         }
@@ -145,7 +154,7 @@ export default class PollController extends Controller {
     public async listPollsHandler(req: Request, res: Response): Promise<any> {
         try {
             const polls = await this.container.db.polls.find().populate('author');
-            return res.status(200).json(polls);
+            return res.status(200).json({ polls });
         } catch (err) {
             return res.status(500).json(this.container.errors.formatServerError());
         }
@@ -166,7 +175,10 @@ export default class PollController extends Controller {
         try {
             const poll = await this.container.db.polls.findById(req.params.id);
             if (!poll) {
-                return res.status(404).json({ error: 'Poll not found' });
+                return res.status(404).json(this.container.errors.formatErrors({
+                    error: 'not_found',
+                    error_description: 'Poll not found'
+                }));
             }
             poll.title = req.body.title;
             poll.author = req.body.author;
@@ -180,6 +192,9 @@ export default class PollController extends Controller {
                 id: poll.id
             });
         } catch (err) {
+            if (err.name === 'ValidationError') {
+                return res.status(400).send(this.container.errors.formatErrors(...this.container.errors.translateMongooseValidationError(err)));
+            }
             return res.status(500).json(this.container.errors.formatServerError());
         }
     }
@@ -199,7 +214,10 @@ export default class PollController extends Controller {
         try {
             const poll = await this.container.db.polls.findById(req.params.id);
             if (!poll) {
-                return res.status(404).json({ error: 'Poll not found' });
+                return res.status(404).json(this.container.errors.formatErrors({
+                    error: 'not_found',
+                    error_description: 'Poll not found'
+                }));
             }
             if (req.body.title) {
                 poll.title = req.body.title;
@@ -219,6 +237,9 @@ export default class PollController extends Controller {
                 id: poll.id
             });
         } catch (err) {
+            if (err.name === 'ValidationError') {
+                return res.status(400).send(this.container.errors.formatErrors(...this.container.errors.translateMongooseValidationError(err)));
+            }
             return res.status(500).json(this.container.errors.formatServerError());
         }
     }
@@ -238,7 +259,10 @@ export default class PollController extends Controller {
         try {
             const poll = await this.container.db.polls.findById(req.params.id);
             if (!poll) {
-                return res.status(404).json({ error: 'Poll not found' });
+                return res.status(404).json(this.container.errors.formatErrors({
+                    error: 'not_found',
+                    error_description: 'Poll not found'
+                }));
             }
             poll.comments.push({
                 author: req.body.author,
@@ -253,6 +277,9 @@ export default class PollController extends Controller {
                 id: poll.comments[poll.comments.length - 1]._id
             });
         } catch (err) {
+            if (err.name === 'ValidationError') {
+                return res.status(400).send(this.container.errors.formatErrors(...this.container.errors.translateMongooseValidationError(err)));
+            }
             return res.status(500).json(this.container.errors.formatServerError());
         }
     }
@@ -272,17 +299,26 @@ export default class PollController extends Controller {
         try {
             const poll = await this.container.db.polls.findById(req.params.pollId);
             if (!poll) {
-                return res.status(404).json({ error: 'Poll not found' });
+                return res.status(404).json(this.container.errors.formatErrors({
+                    error: 'not_found',
+                    error_description: 'Poll not found'
+                }));
             }
             const com = poll.comments.find(comment => comment._id == req.params.commentId);
             if (!com) {
-                return res.status(404).json({ error: 'Comment not found' });
+                return res.status(404).json(this.container.errors.formatErrors({
+                    error: 'not_found',
+                    error_description: 'Comment not found'
+                }));
             }
             _.remove(poll.comments, comment => comment._id == req.params.commentId);
             poll.markModified('comments');
             await poll.save();
             return res.status(204).json();
         } catch (err) {
+            if (err.name === 'ValidationError') {
+                return res.status(400).send(this.container.errors.formatErrors(...this.container.errors.translateMongooseValidationError(err)));
+            }
             return res.status(500).json(this.container.errors.formatServerError());
         }
     }
@@ -302,13 +338,19 @@ export default class PollController extends Controller {
         try {
             const poll = await this.container.db.polls.findById(req.params.pollId);
             if (!poll) {
-                return res.status(404).json({ error: 'Poll not found' });
+                return res.status(404).json(this.container.errors.formatErrors({
+                    error: 'not_found',
+                    error_description: 'Poll not found'
+                }));
             }
             const com = poll.comments.find(comment => comment._id == req.params.commentId);
             if (!com) {
-                return res.status(404).json({ error: 'Comment not found' });
+                return res.status(404).json(this.container.errors.formatErrors({
+                    error: 'not_found',
+                    error_description: 'Comment not found'
+                }));
             }
-            return res.status(201).json(com);
+            return res.status(200).json({ com });
         } catch (err) {
             return res.status(500).json(this.container.errors.formatServerError());
         }
@@ -329,9 +371,12 @@ export default class PollController extends Controller {
         try {
             const poll = await this.container.db.polls.findById(req.params.id);
             if (!poll) {
-                return res.status(404).json({ error: 'Poll not found' });
+                return res.status(404).json(this.container.errors.formatErrors({
+                    error: 'not_found',
+                    error_description: 'Poll not found'
+                }));
             }
-            return res.status(201).json(poll.comments);
+            return res.status(201).json({ comments: poll.comments });
         } catch (err) {
             return res.status(500).json(this.container.errors.formatServerError());
         }
@@ -352,11 +397,17 @@ export default class PollController extends Controller {
         try {
             const poll = await this.container.db.polls.findById(req.params.pollId);
             if (!poll) {
-                return res.status(404).json({ error: 'Poll not found' });
+                return res.status(404).json(this.container.errors.formatErrors({
+                    error: 'not_found',
+                    error_description: 'Poll not found'
+                }));
             }
             const com = poll.comments.find(comment => comment._id == req.params.commentId);
             if (!com) {
-                return res.status(404).json({ error: 'Comment not found' });
+                return res.status(404).json(this.container.errors.formatErrors({
+                    error: 'not_found',
+                    error_description: 'Comment not found'
+                }));
             }
             com.author = req.body.author;
             com.content =  req.body.content;
@@ -369,6 +420,9 @@ export default class PollController extends Controller {
                 id: com._id
             });
         } catch (err) {
+            if (err.name === 'ValidationError') {
+                return res.status(400).send(this.container.errors.formatErrors(...this.container.errors.translateMongooseValidationError(err)));
+            }
             return res.status(500).json(this.container.errors.formatServerError());
         }
     }
@@ -388,11 +442,17 @@ export default class PollController extends Controller {
         try {
             const poll = await this.container.db.polls.findById(req.params.pollId);
             if (!poll) {
-                return res.status(404).json({ error: 'Poll not found' });
+                return res.status(404).json(this.container.errors.formatErrors({
+                    error: 'not_found',
+                    error_description: 'Poll not found'
+                }));
             }
             const com = poll.comments.find(comment => comment._id == req.params.commentId);
             if (!com) {
-                return res.status(404).json({ error: 'Comment not found' });
+                return res.status(404).json(this.container.errors.formatErrors({
+                    error: 'not_found',
+                    error_description: 'Comment not found'
+                }));
             }
             if (req.body.author) {
                 com.author = req.body.author;
@@ -409,6 +469,9 @@ export default class PollController extends Controller {
                 id: com._id
             });
         } catch (err) {
+            if (err.name === 'ValidationError') {
+                return res.status(400).send(this.container.errors.formatErrors(...this.container.errors.translateMongooseValidationError(err)));
+            }
             return res.status(500).json(this.container.errors.formatServerError());
         }
     }
@@ -428,24 +491,39 @@ export default class PollController extends Controller {
         try {
             const poll = await this.container.db.polls.findById(req.params.id);
             if (!poll) {
-                return res.status(404).json({ error: 'Poll not found' });
+                return res.status(404).json(this.container.errors.formatErrors({
+                    error: 'not_found',
+                    error_description: 'Poll not found'
+                }));
             }
             if (req.body.choices == null || req.body.choices.length === 0) {
-                return res.status(400).json({ error: 'choices are required' });
+                return res.status(400).json(this.container.errors.formatErrors({
+                    error: 'invalid_request',
+                    error_description: 'choices are required'
+                }));
             }
             const selectedChoices = [];
             for await (const selectedChoice of req.body?.choices) {
                 const choice = poll.choices.find(currentChoice => currentChoice._id == selectedChoice);
                 if (choice == null) {
-                    return res.status(404).json({ error: `Choice ${selectedChoice} not found` });
+                    return res.status(404).json(this.container.errors.formatErrors({
+                        error: 'not_found',
+                        error_description: `Choice ${selectedChoice} not found`
+                    }));
                 }
                 selectedChoices.push(choice);
             }
             if (!poll.options.multiple && selectedChoices.length > 1) { // Multiple checking
-                return res.status(403).json({ error: 'Multiple choices are not permitted' });
+                return res.status(403).json(this.container.errors.formatErrors({
+                    error: 'access_denied',
+                    error_description: 'Multiple choices are not permitted'
+                }));
             }
             if (poll.options.ipChecking && await this.ipExists(poll, req.ip)) { // IP checking
-                return res.status(403).json({ error: 'Already voted' });
+                return res.status(403).json(this.container.errors.formatErrors({
+                    error: 'access_denied',
+                    error_description: 'Already voted'
+                }));
             }
             for await (const choice of selectedChoices) {
                 choice.voters.push({
@@ -461,6 +539,9 @@ export default class PollController extends Controller {
                 }]
             });
         } catch (err) {
+            if (err.name === 'ValidationError') {
+                return res.status(400).send(this.container.errors.formatErrors(...this.container.errors.translateMongooseValidationError(err)));
+            }
             return res.status(500).json(this.container.errors.formatServerError());
         }
     }

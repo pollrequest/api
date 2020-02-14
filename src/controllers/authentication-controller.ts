@@ -49,6 +49,9 @@ export default class AuthenticationController extends Controller {
                 id: user.id
             });
         } catch (err) {
+            if (err.name === 'ValidationError') {
+                return res.status(400).send(this.container.errors.formatErrors(...this.container.errors.translateMongooseValidationError(err)));
+            }
             return res.status(500).json(this.container.errors.formatServerError());
         }
     }
@@ -68,10 +71,16 @@ export default class AuthenticationController extends Controller {
         try {
             const user = await this.container.db.users.findOne({ email: req.body.email }, { password: 1 });
             if (!user) {
-                return res.status(404).json({ error: 'User not found' });
+                return res.status(404).json(this.container.errors.formatErrors({
+                    error: 'not_found',
+                    error_description: 'User not found'
+                }));
             }
             if (!await this.container.crypto.compare(req.body.password, user.password)) {
-                return res.status(401).json({ error: 'Invalid password' });
+                return res.status(401).json(this.container.errors.formatErrors({
+                    error: 'access_denied',
+                    error_description: 'Invalid password'
+                }));
             }
             const accessToken = await this.container.tokens.encode<AccessTokenData>({ userId: user.id }, process.env.ACCESS_TOKEN_KEY, parseInt(process.env.ACCESS_TOKEN_EXP, 10));
             const refreshToken = await this.container.db.refreshTokens.create({
@@ -84,6 +93,9 @@ export default class AuthenticationController extends Controller {
                 refreshToken: refreshToken.token
             });
         } catch (err) {
+            if (err.name === 'ValidationError') {
+                return res.status(400).send(this.container.errors.formatErrors(...this.container.errors.translateMongooseValidationError(err)));
+            }
             return res.status(500).json(this.container.errors.formatServerError());
         }
     }
@@ -103,12 +115,15 @@ export default class AuthenticationController extends Controller {
         try {
             const refreshToken = await this.container.db.refreshTokens.findOne({ token: req.body.refreshToken }).populate('user');
             if (!refreshToken) {
-                return res.status(400).json({ error: 'No refresh token provided' });
+                return res.status(400).json(this.container.errors.formatErrors({
+                    error: 'invalid_request',
+                    error_description: 'No refresh token provided'
+                }));
             }
             const accessToken = await this.container.tokens.encode<AccessTokenData>({ userId: refreshToken.user.id }, process.env.ACCESS_TOKEN_KEY, parseInt(process.env.ACCESS_TOKEN_EXP, 10));
             refreshToken.expiration = new Date(Date.now() + (parseInt(process.env.REFRESH_TOKEN_EXP, 10) * 1000));
             await refreshToken.save();
-            return res.status(200).json({ accessToken });
+            return res.status(200).json({ access_token: accessToken });
         } catch (err) {
             return res.status(500).json(this.container.errors.formatServerError());
         }
