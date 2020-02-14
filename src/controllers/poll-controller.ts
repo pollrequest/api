@@ -236,8 +236,9 @@ export default class PollController extends Controller {
      * - Method : `POST`
      * - URI : `/:id/comments`
      * 
-     * @param req 
-     * @param res 
+     * @param req Express Request
+     * @param res Express Response
+     * @async
      */
     public async addCommentPollHandler(req: Request, res: Response): Promise<any> {
         try {
@@ -270,8 +271,9 @@ export default class PollController extends Controller {
      * - Method : `DELETE`
      * - URI : `/:pollId/comments/:commentId`
      * 
-     * @param req 
-     * @param res 
+     * @param req Express Request
+     * @param res Express Response
+     * @async
      */
     public async deleteCommentPollHandler(req: Request, res: Response): Promise<any> {
         try {
@@ -300,8 +302,9 @@ export default class PollController extends Controller {
      * - Method : `GET`
      * - URI : `/:pollId/comments/:commentId`
      * 
-     * @param req 
-     * @param res 
+     * @param req Express Request
+     * @param res Express Response
+     * @async
      */
     public async getCommentPollHandler(req: Request, res: Response): Promise<any> {
         try {
@@ -327,8 +330,9 @@ export default class PollController extends Controller {
      * - Method : `GET`
      * - URI : `/:id/comments`
      * 
-     * @param req 
-     * @param res 
+     * @param req Express Request
+     * @param res Express Response
+     * @async
      */
     public async listCommentsPollHandler(req: Request, res: Response): Promise<any> {
         try {
@@ -350,8 +354,9 @@ export default class PollController extends Controller {
      * - Method : `PUT`
      * - URI : `/:pollId/comments/:commentId`
      * 
-     * @param req 
-     * @param res 
+     * @param req Express Request
+     * @param res Express Response
+     * @async
      */
     public async modifyCommentPollHandler(req: Request, res: Response): Promise<any> {
         try {
@@ -386,8 +391,9 @@ export default class PollController extends Controller {
      * - Method : `PATCH`
      * - URI : `/:pollId/comments/:commentId`
      * 
-     * @param req 
-     * @param res 
+     * @param req Express Request
+     * @param res Express Response
+     * @async
      */
     public async updateCommentPollHandler(req: Request, res: Response): Promise<any> {
         try {
