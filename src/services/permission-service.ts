@@ -25,7 +25,7 @@ export default class PermissionService extends Service {
      * @param permission Permission to check
      */
     public hasPermission(user: UserInstance, permission: Permission): boolean {
-        return this.container.config.permissions.roles[user.role].permissions.includes(permission);
+        return user != null && this.container.config.permissions.roles[user.role].permissions.includes(permission);
     }
 }
 
@@ -33,6 +33,8 @@ export default class PermissionService extends Service {
  * Permission type.
  */
 export type Permission =
-      'user.view.all'
-    | 'user.modify'
-    | 'user.update'; // TODO Add all permissions in the future
+      'user.list.all' // Access to all user attributes in GET /users
+    | 'user.specific.all' // Access to all user attributes in GET /users/:id
+    | 'user.modify' // Access to user modification
+    | 'user.update' // Access to user update
+    | 'user.delete'; // Access to user deletion
