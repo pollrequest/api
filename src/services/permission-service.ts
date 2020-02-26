@@ -33,18 +33,18 @@ export default class PermissionService extends Service {
  * Permission type.
  */
 export type Permission =
-      'user.list.all' // Access to all user attributes in GET /users
-    | 'user.specific.all' // Access to all user attributes in GET /users/:id
-    | 'user.modify' // Access to user modification
-    | 'user.update' // Access to user update
-    | 'user.delete' // Access to user deletion
-    | 'poll.list.all' // Access to all poll attributes in GET /polls
-    | 'poll.specific.all' // Access to all poll attributes in GET /polls/:id
-    | 'poll.modify' // Access to poll modification
-    | 'poll.modify.all' // Access to full poll modification
-    | 'poll.update' // Access to poll update
-    | 'poll.update.all' // Access to full poll update
-    | 'poll.delete' // Access to poll deletion
-    | 'poll.comment.modify' // Access to poll comment modification
-    | 'poll.comment.update' // Access to poll comment update
-    | 'poll.comment.delete'; // Access to poll comment deletion
+      'user.list.all'
+    | 'user.specific.all'
+    | 'user.modify'
+    | 'user.update'
+    | 'user.delete'
+    | 'poll.list.all'
+    | 'poll.specific.all'
+    | 'poll.modify'
+    | 'poll.modify.all'
+    | 'poll.update'
+    | 'poll.update.all'
+    | 'poll.delete'
+    | 'poll.comment.modify'
+    | 'poll.comment.update'
+    | 'poll.comment.delete';
