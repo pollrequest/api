@@ -1244,6 +1244,9 @@
           "title" : {
             "type" : "string"
           },
+          "author": {
+            "$ref": "#/components/schemas/User"
+          },
           "options" : {
             "$ref" : "#/components/schemas/PollOptions"
           },
