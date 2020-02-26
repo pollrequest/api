@@ -35,21 +35,21 @@ export default class PollController extends Controller {
         this.voteHandler = this.voteHandler.bind(this);
 
         // Polls
-        this.registerEndpoint({ method: 'GET', uri: '/', handlers: [this.listPollsHandler], description: 'Lists all polls' });
-        this.registerEndpoint({ method: 'GET', uri: '/:id', handlers: [this.getPollHandler], description: 'Gets a specific poll' });
-        this.registerEndpoint({ method: 'POST', uri: '/', handlers: [this.container.auth.authenticateHandler, this.createPollHandler], description: 'Creates a new poll' });
-        this.registerEndpoint({ method: 'PUT', uri: '/:id', handlers: [this.modifyPollHandler], description: 'Modifies a poll' });
-        this.registerEndpoint({ method: 'PATCH', uri: '/:id', handlers: [this.updatePollHandler], description: 'Updates a poll' });
-        this.registerEndpoint({ method: 'DELETE', uri: '/:id', handlers: [this.deletePollHandler], description: 'Deletes a poll' });
-        this.registerEndpoint({ method: 'PATCH', uri: '/:id/vote', handlers: [this.container.auth.authenticateHandler, this.voteHandler], description: 'Votes for a choice' });
+        this.registerEndpoint({ method: 'GET', uri: '/', handlers: [this.container.auth.authenticateHandler, this.listPollsHandler], description: 'Lists all polls' });
+        this.registerEndpoint({ method: 'GET', uri: '/:id', handlers: [this.container.auth.authenticateHandler, this.getPollHandler], description: 'Gets a specific poll' });
+        this.registerEndpoint({ method: 'POST', uri: '/', handlers: [this.container.auth.authenticateHandler, this.container.auth.authenticateHandler, this.createPollHandler], description: 'Creates a new poll' });
+        this.registerEndpoint({ method: 'PUT', uri: '/:id', handlers: [this.container.auth.authenticateHandler, this.modifyPollHandler], description: 'Modifies a poll' });
+        this.registerEndpoint({ method: 'PATCH', uri: '/:id', handlers: [this.container.auth.authenticateHandler, this.updatePollHandler], description: 'Updates a poll' });
+        this.registerEndpoint({ method: 'DELETE', uri: '/:id', handlers: [this.container.auth.authenticateHandler, this.deletePollHandler], description: 'Deletes a poll' });
+        this.registerEndpoint({ method: 'PATCH', uri: '/:id/vote', handlers: [this.container.auth.authenticateHandler, this.container.auth.authenticateHandler, this.voteHandler], description: 'Votes for a choice' });
 
         // Comments
-        this.registerEndpoint({ method: 'GET', uri: '/:id/comments', handlers: [this.listCommentsHandler], description: 'Gets all comments' });
-        this.registerEndpoint({ method: 'GET', uri: '/:pollId/comments/:commentId', handlers: [this.getCommentHandler], description: 'Gets a specific comment' });
-        this.registerEndpoint({ method: 'POST', uri: '/:id/comments', handlers: [this.container.auth.authenticateHandler, this.createCommentHandler], description: 'Creates a new comment' });
-        this.registerEndpoint({ method: 'PUT', uri: '/:pollId/comments/:commentId', handlers: [this.modifyCommentHandler], description: 'Modifies a comment' });
-        this.registerEndpoint({ method: 'PATCH', uri: '/:pollId/comments/:commentId', handlers: [this.updateCommentHandler], description: 'Updates a comment' });
-        this.registerEndpoint({ method: 'DELETE', uri: '/:pollId/comments/:commentId', handlers: [this.deleteCommentHandler], description: 'Deletes a comment' });
+        this.registerEndpoint({ method: 'GET', uri: '/:id/comments', handlers: [this.container.auth.authenticateHandler, this.listCommentsHandler], description: 'Gets all comments' });
+        this.registerEndpoint({ method: 'GET', uri: '/:pollId/comments/:commentId', handlers: [this.container.auth.authenticateHandler, this.getCommentHandler], description: 'Gets a specific comment' });
+        this.registerEndpoint({ method: 'POST', uri: '/:id/comments', handlers: [this.container.auth.authenticateHandler, this.container.auth.authenticateHandler, this.createCommentHandler], description: 'Creates a new comment' });
+        this.registerEndpoint({ method: 'PUT', uri: '/:pollId/comments/:commentId', handlers: [this.container.auth.authenticateHandler, this.modifyCommentHandler], description: 'Modifies a comment' });
+        this.registerEndpoint({ method: 'PATCH', uri: '/:pollId/comments/:commentId', handlers: [this.container.auth.authenticateHandler, this.updateCommentHandler], description: 'Updates a comment' });
+        this.registerEndpoint({ method: 'DELETE', uri: '/:pollId/comments/:commentId', handlers: [this.container.auth.authenticateHandler, this.deleteCommentHandler], description: 'Deletes a comment' });
     }
 
     /**
@@ -65,7 +65,21 @@ export default class PollController extends Controller {
      */
     public async listPollsHandler(req: Request, res: Response): Promise<any> {
         try {
-            const polls = await this.container.db.polls.find().populate('author');
+            const { user: self } = res.locals;
+            let polls;
+            if (this.container.perms.hasPermission(self, 'poll.list.all')) {
+                if (this.container.perms.hasPermission(self, 'user.list.all')) {
+                    polls = await this.db.polls.find().populate('author');
+                } else {
+                    polls = await this.db.polls.find().populate('author', 'name');
+                }
+            } else {
+                if (this.container.perms.hasPermission(self, 'user.list.all')) {
+                    polls = await this.db.polls.find().select('title options choices.label comments').populate('author');
+                } else {
+                    polls = await this.db.polls.find().select('title options choices.label comments').populate('author', 'name');
+                }
+            }
             return res.status(200).json({ polls });
         } catch (err) {
             return res.status(500).json(this.container.errors.formatServerError());
@@ -85,7 +99,21 @@ export default class PollController extends Controller {
      */
     public async getPollHandler(req: Request, res: Response): Promise<any> {
         try {
-            const poll = await this.container.db.polls.findById(req.params.id).populate('author');
+            const { user: self } = res.locals;
+            let poll: PollInstance;
+            if (this.container.perms.hasPermission(self, 'poll.specific.all')) {
+                if (this.container.perms.hasPermission(self, 'user.list.all')) {
+                    poll = await this.db.polls.findById(req.params.id).populate('author');
+                } else {
+                    poll = await this.db.polls.findById(req.params.id).populate('author', 'name');
+                }
+            } else {
+                if (this.container.perms.hasPermission(self, 'user.list.all')) {
+                    poll = await this.db.polls.findById(req.params.id).select('title options choices.label comments').populate('author');
+                } else {
+                    poll = await this.db.polls.findById(req.params.id).select('title options choices.label comments').populate('author', 'name');
+                }
+            }
             if (!poll) {
                 return res.status(404).json(this.container.errors.formatErrors({
                     error: 'not_found',
@@ -163,25 +191,37 @@ export default class PollController extends Controller {
      */
     public async modifyPollHandler(req: Request, res: Response): Promise<any> {
         try {
-            const poll = await this.container.db.polls.findById(req.params.id);
-            if (!poll) {
-                return res.status(404).json(this.container.errors.formatErrors({
-                    error: 'not_found',
-                    error_description: 'Poll not found'
+            const { user: self } = res.locals;
+            const poll = await this.container.db.polls.findById(req.params.id).populate('author');
+            if (this.container.perms.hasPermission(self, 'poll.modify') || self?.id == poll.author?.id) {
+                if (!poll) {
+                    return res.status(404).json(this.container.errors.formatErrors({
+                        error: 'not_found',
+                        error_description: 'Poll not found'
+                    }));
+                }
+                if (this.container.perms.hasPermission(self, 'poll.modify.all')) {
+                    poll.title = req.body.title;
+                }
+                if (this.container.perms.hasPermission(self, 'poll.modify.all')) {
+                    poll.author = req.body.author;
+                }
+                poll.options = req.body.options;
+                await poll.save();
+                return res.status(200).json({
+                    id: poll.id,
+                    links: [{
+                        rel: 'Gets the modified poll',
+                        action: 'GET',
+                        href: `${req.protocol}://${req.hostname}${this.rootUri}/${poll.id}`
+                    }] as Link[]
+                });
+            } else {
+                return res.status(403).send(this.container.errors.formatErrors({
+                    error: 'access_denied',
+                    error_description: 'Not allowed to modify this poll'
                 }));
             }
-            poll.title = req.body.title;
-            poll.author = req.body.author;
-            poll.options = req.body.options;
-            await poll.save();
-            return res.status(200).json({
-                id: poll.id,
-                links: [{
-                    rel: 'Gets the modified poll',
-                    action: 'GET',
-                    href: `${req.protocol}://${req.hostname}${this.rootUri}/${poll.id}`
-                }] as Link[]
-            });
         } catch (err) {
             if (err.name === 'ValidationError') {
                 return res.status(400).send(this.container.errors.formatErrors(...this.container.errors.translateMongooseValidationError(err)));
@@ -203,31 +243,39 @@ export default class PollController extends Controller {
      */
     public async updatePollHandler(req: Request, res: Response): Promise<any> {
         try {
-            const poll = await this.container.db.polls.findById(req.params.id);
-            if (!poll) {
-                return res.status(404).json(this.container.errors.formatErrors({
-                    error: 'not_found',
-                    error_description: 'Poll not found'
+            const { user: self } = res.locals;
+            const poll = await this.container.db.polls.findById(req.params.id).populate('author');
+            if (this.container.perms.hasPermission(self, 'poll.update') || self?.id == poll.author?.id) {
+                if (!poll) {
+                    return res.status(404).json(this.container.errors.formatErrors({
+                        error: 'not_found',
+                        error_description: 'Poll not found'
+                    }));
+                }
+                if (req.body.title && this.container.perms.hasPermission(self, 'poll.update.all')) {
+                    poll.title = req.body.title;
+                }
+                if (req.body.author && this.container.perms.hasPermission(self, 'poll.update.all')) {
+                    poll.author = req.body.author;
+                }
+                if (req.body.options) {
+                    poll.options = req.body.options;
+                }
+                await poll.save();
+                return res.status(200).json({
+                    id: poll.id,
+                    links: [{
+                        rel: 'Gets the updated poll',
+                        action: 'GET',
+                        href: `${req.protocol}://${req.hostname}${this.rootUri}/${poll.id}`
+                    }] as Link[]
+                });
+            } else {
+                return res.status(403).send(this.container.errors.formatErrors({
+                    error: 'access_denied',
+                    error_description: 'Not allowed to update this poll'
                 }));
             }
-            if (req.body.title) {
-                poll.title = req.body.title;
-            }
-            if (req.body.author) {
-                poll.author = req.body.author;
-            }
-            if (req.body.options) {
-                poll.options = req.body.options;
-            }
-            await poll.save();
-            return res.status(200).json({
-                id: poll.id,
-                links: [{
-                    rel: 'Gets the updated poll',
-                    action: 'GET',
-                    href: `${req.protocol}://${req.hostname}${this.rootUri}/${poll.id}`
-                }] as Link[]
-            });
         } catch (err) {
             if (err.name === 'ValidationError') {
                 return res.status(400).send(this.container.errors.formatErrors(...this.container.errors.translateMongooseValidationError(err)));
@@ -249,14 +297,22 @@ export default class PollController extends Controller {
      */
     public async deletePollHandler(req: Request, res: Response): Promise<any> {
         try {
-            const poll = await this.container.db.polls.findByIdAndDelete(req.params.id);
-            if (!poll) {
-                return res.status(404).json(this.container.errors.formatErrors({
-                    error: 'not_found',
-                    error_description: 'Poll not found'
+            const { user: self } = res.locals;
+            if (this.container.perms.hasPermission(self, 'poll.delete')) {
+                const poll = await this.container.db.polls.findByIdAndDelete(req.params.id);
+                if (!poll) {
+                    return res.status(404).json(this.container.errors.formatErrors({
+                        error: 'not_found',
+                        error_description: 'Poll not found'
+                    }));
+                }
+                return res.status(204).json();
+            } else {
+                return res.status(403).send(this.container.errors.formatErrors({
+                    error: 'access_denied',
+                    error_description: 'Not allowed to delete this poll'
                 }));
             }
-            return res.status(204).json();
         } catch (err) {
             return res.status(500).json(this.container.errors.formatServerError());
         }
@@ -458,6 +514,7 @@ export default class PollController extends Controller {
      */
     public async modifyCommentHandler(req: Request, res: Response): Promise<any> {
         try {
+            const { user: self } = res.locals;
             const poll = await this.container.db.polls.findById(req.params.pollId);
             if (!poll) {
                 return res.status(404).json(this.container.errors.formatErrors({
@@ -472,8 +529,12 @@ export default class PollController extends Controller {
                     error_description: 'Comment not found'
                 }));
             }
-            com.author = req.body.author;
-            com.content =  req.body.content;
+            if (this.container.perms.hasPermission(self, 'poll.comment.modify')) {
+                com.author = req.body.author;
+            }
+            if (this.container.perms.hasPermission(self, 'poll.comment.modify') || self?.id == poll.author?.id) {
+                com.content =  req.body.content;
+            }
             await poll.save();
             return res.status(200).json({
                 id: com._id,
@@ -504,6 +565,7 @@ export default class PollController extends Controller {
      */
     public async updateCommentHandler(req: Request, res: Response): Promise<any> {
         try {
+            const { user: self } = res.locals;
             const poll = await this.container.db.polls.findById(req.params.pollId);
             if (!poll) {
                 return res.status(404).json(this.container.errors.formatErrors({
@@ -518,10 +580,10 @@ export default class PollController extends Controller {
                     error_description: 'Comment not found'
                 }));
             }
-            if (req.body.author) {
+            if (req.body.author && this.container.perms.hasPermission(self, 'poll.comment.update')) {
                 com.author = req.body.author;
             }
-            if (req.body.content) {
+            if (req.body.content && (this.container.perms.hasPermission(self, 'poll.comment.modify') || self?.id == poll.author?.id)) {
                 com.content =  req.body.content;
             }
             await poll.save();
@@ -554,24 +616,32 @@ export default class PollController extends Controller {
      */
     public async deleteCommentHandler(req: Request, res: Response): Promise<any> {
         try {
+            const { user: self } = res.locals;
             const poll = await this.container.db.polls.findById(req.params.pollId);
-            if (!poll) {
-                return res.status(404).json(this.container.errors.formatErrors({
-                    error: 'not_found',
-                    error_description: 'Poll not found'
+            if (this.container.perms.hasPermission(self, 'poll.comment.delete') || self?.id == poll.author?.id) {
+                if (!poll) {
+                    return res.status(404).json(this.container.errors.formatErrors({
+                        error: 'not_found',
+                        error_description: 'Poll not found'
+                    }));
+                }
+                const com = poll.comments.find(comment => comment._id == req.params.commentId);
+                if (!com) {
+                    return res.status(404).json(this.container.errors.formatErrors({
+                        error: 'not_found',
+                        error_description: 'Comment not found'
+                    }));
+                }
+                _.remove(poll.comments, comment => comment._id == req.params.commentId);
+                poll.markModified('comments');
+                await poll.save();
+                return res.status(204).json();
+            } else {
+                return res.status(403).send(this.container.errors.formatErrors({
+                    error: 'access_denied',
+                    error_description: 'Not allowed to delete this comment'
                 }));
             }
-            const com = poll.comments.find(comment => comment._id == req.params.commentId);
-            if (!com) {
-                return res.status(404).json(this.container.errors.formatErrors({
-                    error: 'not_found',
-                    error_description: 'Comment not found'
-                }));
-            }
-            _.remove(poll.comments, comment => comment._id == req.params.commentId);
-            poll.markModified('comments');
-            await poll.save();
-            return res.status(204).json();
         } catch (err) {
             if (err.name === 'ValidationError') {
                 return res.status(400).send(this.container.errors.formatErrors(...this.container.errors.translateMongooseValidationError(err)));
