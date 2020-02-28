@@ -3,6 +3,7 @@ import express from 'express';
 import mung from 'express-mung';
 import helmet from 'helmet';
 import { Server } from 'http';
+import swagger from 'swagger-ui-express';
 import Service from './service';
 import ServiceContainer from './service-container';
 
@@ -97,16 +98,23 @@ export default class ExpressService extends Service {
 
         // Logging request and response
         app.use(mung.json((body, req, res) => {
-            this.container.log.log(`${req.ip} > Requested ${req.method} ${req.originalUrl} in ${Date.now() - res.locals.data.start} ms`, { type: 'endpoints' });
-            this.container.log.log(body, { type: 'endpoints' });
+            this.container.log.info(`${req.ip} > Requested ${req.method} ${req.originalUrl} in ${Date.now() - res.locals.data.start} ms`, { type: 'endpoints' });
+            this.container.log.info(body, { type: 'endpoints' });
         }));
+
+        // Swagger documentation
+        app.use('/docs', swagger.serve, swagger.setup(this.container.config.loadSync('config/swagger.json', 'JSON')));
+        this.container.log.info('Loaded Swagger documentation');
 
         // Registering controllers
         this.container.controllers.registerControllers(app);
 
         // handler used when no endpoint matches
         app.all('*', (req, res) => {
-            return res.status(404).json({ error: `Unknown endpoint ${req.method} ${req.originalUrl}` });
+            return res.status(404).json(this.container.errors.formatErrors({
+                error: 'not_found',
+                error_description: `Unknown endpoint ${req.method} ${req.originalUrl}`
+            }));
         });
 
         return app;
