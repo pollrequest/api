@@ -390,29 +390,6 @@ export default class PollController extends Controller {
     }
 
     /**
-     * Gets trends.
-     * 
-     * This method is a handler / endoint :
-     * - Method : `GET`
-     * - URI : `/trends`
-     * 
-     * @param req Express Request
-     * @param res Express Response
-     * @async
-     */
-    public async trendsHandler(req: Request, res: Response): Promise<any> {
-        try {
-            const polls = await this.db.polls.find();
-            polls.filter((poll) => {
-                Date now = new Date();
-                return poll.createdAt > 
-            });
-        } catch (err) {
-            return res.status(500).json(this.container.errors.formatServerError());
-        }
-    }
-
-    /**
      * Lists all comments.
      * 
      * This method is a handler / endpoint : 
