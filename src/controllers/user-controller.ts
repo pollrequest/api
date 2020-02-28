@@ -22,11 +22,11 @@ export default class UserController extends Controller {
         this.updateHandler = this.updateHandler.bind(this);
         this.deleteHandler = this.deleteHandler.bind(this);
         this.registerEndpoint({ method: 'GET', uri: '/me', handlers: [this.container.auth.authenticateHandler, this.getMeHandler], description: 'Gets the user from a provided token' });
-        this.registerEndpoint({ method: 'GET', uri: '/', handlers: [this.getAllHandler], description: 'Gets all users' });
-        this.registerEndpoint({ method: 'GET', uri: '/:id', handlers: [this.getSpecificHandler], description: 'Gets a specific user' });
-        this.registerEndpoint({ method: 'PUT', uri: '/:id', handlers: [this.modifyHandler], description: 'Modifies an user' });
-        this.registerEndpoint({ method: 'PATCH', uri: '/:id', handlers: [this.updateHandler], description: 'Updates an user' });
-        this.registerEndpoint({ method: 'DELETE', uri: '/:id', handlers: [this.deleteHandler], description: 'Deletes an user' });
+        this.registerEndpoint({ method: 'GET', uri: '/', handlers: [this.container.auth.authenticateHandler, this.getAllHandler], description: 'Gets all users' });
+        this.registerEndpoint({ method: 'GET', uri: '/:id', handlers: [this.container.auth.authenticateHandler, this.getSpecificHandler], description: 'Gets a specific user' });
+        this.registerEndpoint({ method: 'PUT', uri: '/:id', handlers: [this.container.auth.authenticateHandler, this.modifyHandler], description: 'Modifies an user' });
+        this.registerEndpoint({ method: 'PATCH', uri: '/:id', handlers: [this.container.auth.authenticateHandler, this.updateHandler], description: 'Updates an user' });
+        this.registerEndpoint({ method: 'DELETE', uri: '/:id', handlers: [this.container.auth.authenticateHandler, this.deleteHandler], description: 'Deletes an user' });
     }
 
     /**
@@ -81,7 +81,13 @@ export default class UserController extends Controller {
      */
     public async getAllHandler(req: Request, res: Response): Promise<any> {
         try {
-            const users = await this.container.db.users.find();
+            const { user: self } = res.locals;
+            let users;
+            if (this.container.perms.hasPermission(self, 'user.list.all')) {
+                users = await this.container.db.users.find();
+            } else {
+                users = await this.container.db.users.find().select('name');
+            }
             return res.status(200).json({ users });
         } catch (err) {
             return res.status(500).json(this.container.errors.formatServerError());
@@ -101,7 +107,13 @@ export default class UserController extends Controller {
      */
     public async getSpecificHandler(req: Request, res: Response): Promise<any> {
         try {
-            const user = await this.container.db.users.findById(req.params.id);
+            const { user: self } = res.locals;
+            let user;
+            if (this.container.perms.hasPermission(self, 'user.list.all') || self?.id == req.params.id) {
+                user = await this.container.db.users.findById(req.params.id);
+            } else {
+                user = await this.container.db.users.findById(req.params.id).select('name');
+            }
             if (!user) {
                 return res.status(404).json(this.container.errors.formatErrors({
                     error: 'not_found',
@@ -138,25 +150,33 @@ export default class UserController extends Controller {
      */
     public async modifyHandler(req: Request, res: Response): Promise<any> {
         try {
-            const user = await this.container.db.users.findById(req.params.id);
-            if (!user) {
-                return res.status(404).json(this.container.errors.formatErrors({
-                    error: 'not_found',
-                    error_description: 'User not found'
+            const { user: self } = res.locals;
+            if (this.container.perms.hasPermission(self, 'user.modify') || self?.id == req.params.id) {
+                const user = await this.container.db.users.findById(req.params.id);
+                if (!user) {
+                    return res.status(404).json(this.container.errors.formatErrors({
+                        error: 'not_found',
+                        error_description: 'User not found'
+                    }));
+                }
+                user.email = req.body.email;
+                user.name = req.body.name;
+                user.password = req.body.password;
+                await user.save();
+                return res.status(200).json({
+                    id: user.id,
+                    links: [{
+                        rel: 'Gets the modified user',
+                        action: 'GET',
+                        href: `${req.protocol}://${req.hostname}${this.rootUri}/${user.id}`
+                    }] as Link[]
+                });
+            } else {
+                return res.status(403).send(this.container.errors.formatErrors({
+                    error: 'access_denied',
+                    error_description: 'Not allowed to modify this user'
                 }));
             }
-            user.email = req.body.email;
-            user.name = req.body.name;
-            user.password = req.body.password;
-            await user.save();
-            return res.status(200).json({
-                id: user.id,
-                links: [{
-                    rel: 'Gets the modified user',
-                    action: 'GET',
-                    href: `${req.protocol}://${req.hostname}${this.rootUri}/${user.id}`
-                }] as Link[]
-            });
         } catch (err) {
             if (err.name === 'ValidationError') {
                 return res.status(400).send(this.container.errors.formatErrors(...this.container.errors.translateMongooseValidationError(err)));
@@ -178,31 +198,39 @@ export default class UserController extends Controller {
      */
     public async updateHandler(req: Request, res: Response): Promise<any> {
         try {
-            const user = await this.container.db.users.findById(req.params.id);
-            if (!user) {
-                return res.status(404).json(this.container.errors.formatErrors({
-                    error: 'not_found',
-                    error_description: 'User not found'
+            const { user: self } = res.locals;
+            if (this.container.perms.hasPermission(self, 'user.update') || self?.id == req.params.id) {
+                const user = await this.container.db.users.findById(req.params.id);
+                if (!user) {
+                    return res.status(404).json(this.container.errors.formatErrors({
+                        error: 'not_found',
+                        error_description: 'User not found'
+                    }));
+                }
+                if (req.body.email) {
+                    user.email = req.body.email;
+                }
+                if (req.body.name) {
+                    user.name = req.body.name;
+                }
+                if (req.body.password) {
+                    user.password = req.body.password;
+                }
+                await user.save();
+                return res.status(200).json({
+                    id: user.id,
+                    links: [{
+                        rel: 'Gets the updated user',
+                        action: 'GET',
+                        href: `${req.protocol}://${req.hostname}${this.rootUri}/${user.id}`
+                    }] as Link[]
+                });
+            } else {
+                return res.status(403).send(this.container.errors.formatErrors({
+                    error: 'access_denied',
+                    error_description: 'Not allowed to update this user'
                 }));
             }
-            if (req.body.email) {
-                user.email = req.body.email;
-            }
-            if (req.body.name) {
-                user.name = req.body.name;
-            }
-            if (req.body.password) {
-                user.password = req.body.password;
-            }
-            await user.save();
-            return res.status(200).json({
-                id: user.id,
-                links: [{
-                    rel: 'Gets the updated user',
-                    action: 'GET',
-                    href: `${req.protocol}://${req.hostname}${this.rootUri}/${user.id}`
-                }] as Link[]
-            });
         } catch (err) {
             if (err.name === 'ValidationError') {
                 return res.status(400).send(this.container.errors.formatErrors(...this.container.errors.translateMongooseValidationError(err)));
@@ -224,14 +252,22 @@ export default class UserController extends Controller {
      */
     public async deleteHandler(req: Request, res: Response): Promise<any> {
         try {
-            const user = await this.container.db.users.findByIdAndDelete(req.params.id);
-            if (!user) {
-                return res.status(404).json(this.container.errors.formatErrors({
-                    error: 'not_found',
-                    error_description: 'User not found'
+            const { user: self } = res.locals;
+            if (this.container.perms.hasPermission(self, 'user.delete') || self?.id == req.params.id) {
+                const user = await this.container.db.users.findByIdAndDelete(req.params.id);
+                if (!user) {
+                    return res.status(404).json(this.container.errors.formatErrors({
+                        error: 'not_found',
+                        error_description: 'User not found'
+                    }));
+                }
+                return res.status(204).json();
+            } else {
+                return res.status(403).send(this.container.errors.formatErrors({
+                    error: 'access_denied',
+                    error_description: 'Not allowed to delete this user'
                 }));
             }
-            return res.status(204).json();
         } catch (err) {
             return res.status(500).json(this.container.errors.formatServerError());
         }
