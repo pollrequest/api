@@ -37,16 +37,16 @@ export default class PollController extends Controller {
         // Polls
         this.registerEndpoint({ method: 'GET', uri: '/', handlers: [this.container.auth.authenticateHandler, this.listPollsHandler], description: 'Lists all polls' });
         this.registerEndpoint({ method: 'GET', uri: '/:id', handlers: [this.container.auth.authenticateHandler, this.getPollHandler], description: 'Gets a specific poll' });
-        this.registerEndpoint({ method: 'POST', uri: '/', handlers: [this.container.auth.authenticateHandler, this.container.auth.authenticateHandler, this.createPollHandler], description: 'Creates a new poll' });
+        this.registerEndpoint({ method: 'POST', uri: '/', handlers: [this.container.auth.authenticateHandler, this.createPollHandler], description: 'Creates a new poll' });
         this.registerEndpoint({ method: 'PUT', uri: '/:id', handlers: [this.container.auth.authenticateHandler, this.modifyPollHandler], description: 'Modifies a poll' });
         this.registerEndpoint({ method: 'PATCH', uri: '/:id', handlers: [this.container.auth.authenticateHandler, this.updatePollHandler], description: 'Updates a poll' });
         this.registerEndpoint({ method: 'DELETE', uri: '/:id', handlers: [this.container.auth.authenticateHandler, this.deletePollHandler], description: 'Deletes a poll' });
-        this.registerEndpoint({ method: 'PATCH', uri: '/:id/vote', handlers: [this.container.auth.authenticateHandler, this.container.auth.authenticateHandler, this.voteHandler], description: 'Votes for a choice' });
+        this.registerEndpoint({ method: 'PATCH', uri: '/:id/vote', handlers: [this.container.auth.authenticateHandler, this.voteHandler], description: 'Votes for a choice' });
 
         // Comments
         this.registerEndpoint({ method: 'GET', uri: '/:id/comments', handlers: [this.container.auth.authenticateHandler, this.listCommentsHandler], description: 'Gets all comments' });
         this.registerEndpoint({ method: 'GET', uri: '/:pollId/comments/:commentId', handlers: [this.container.auth.authenticateHandler, this.getCommentHandler], description: 'Gets a specific comment' });
-        this.registerEndpoint({ method: 'POST', uri: '/:id/comments', handlers: [this.container.auth.authenticateHandler, this.container.auth.authenticateHandler, this.createCommentHandler], description: 'Creates a new comment' });
+        this.registerEndpoint({ method: 'POST', uri: '/:id/comments', handlers: [this.container.auth.authenticateHandler, this.createCommentHandler], description: 'Creates a new comment' });
         this.registerEndpoint({ method: 'PUT', uri: '/:pollId/comments/:commentId', handlers: [this.container.auth.authenticateHandler, this.modifyCommentHandler], description: 'Modifies a comment' });
         this.registerEndpoint({ method: 'PATCH', uri: '/:pollId/comments/:commentId', handlers: [this.container.auth.authenticateHandler, this.updateCommentHandler], description: 'Updates a comment' });
         this.registerEndpoint({ method: 'DELETE', uri: '/:pollId/comments/:commentId', handlers: [this.container.auth.authenticateHandler, this.deleteCommentHandler], description: 'Deletes a comment' });
@@ -385,6 +385,29 @@ export default class PollController extends Controller {
             if (err.name === 'ValidationError') {
                 return res.status(400).send(this.container.errors.formatErrors(...this.container.errors.translateMongooseValidationError(err)));
             }
+            return res.status(500).json(this.container.errors.formatServerError());
+        }
+    }
+
+    /**
+     * Gets trends.
+     * 
+     * This method is a handler / endoint :
+     * - Method : `GET`
+     * - URI : `/trends`
+     * 
+     * @param req Express Request
+     * @param res Express Response
+     * @async
+     */
+    public async trendsHandler(req: Request, res: Response): Promise<any> {
+        try {
+            const polls = await this.db.polls.find();
+            polls.filter((poll) => {
+                Date now = new Date();
+                return poll.createdAt > 
+            });
+        } catch (err) {
             return res.status(500).json(this.container.errors.formatServerError());
         }
     }
